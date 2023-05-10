@@ -10,7 +10,7 @@
 #define REG_CREATED_NEW_KEY_SUCCESSFULLY 0
 #define REG_KEY_DOESNT_EXIST -2
 
-int _tmain(int argc, TCHAR** argv) {
+/*int _tmain(int argc, TCHAR** argv) {
 
 	//BOOL firstTime = TRUE;
 	
@@ -134,4 +134,4 @@ int _tmain(int argc, TCHAR** argv) {
 
 	_gettch();
 		//return 0;
-}
+}*/

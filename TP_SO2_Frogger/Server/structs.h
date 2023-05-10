@@ -6,20 +6,42 @@
 
 typedef struct FROG_STRUCT Frog, * pFrog;
 typedef struct CAR_STRUCT Car, * pCars;
+typedef struct COMMAND Command, * pCommand;
 typedef struct SHAREDMEMCOMMAND ShmCommand, * pShmCommand;
 typedef struct SHAREDMEMGAME ShmGame, * pShmGame;
-typedef struct COMMAND Command, * pCommand;
 typedef struct DATA Data, * pData;
+typedef struct GAME Game, * pGame;
+
+struct GAME {
+	DWORD rows;
+	TCHAR board[10][20];
+	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
+	DWORD nCars;
+	pCars cars;
+	DWORD suspended;
+	DWORD time;
+	DWORD points;
+	BOOL isShutdown;
+	BOOL isSuspended;
+	DWORD gameType; // 1 for solo, 2 for duo
+};
+
+struct COMMAND {
+	DWORD parameter;
+	DWORD parameter1;
+	DWORD cmd;
+};
 
 struct DATA {
 	HANDLE hFileMapFrogger; // shm mm for game
 	HANDLE hFileMapMemory; // memory from cmd
 	pShmCommand sharedMemCmd; // access to commands from operator
 	HANDLE hMutex; // locks access
-	HANDLE hWriteSem;
+	HANDLE hWriteSem; // write semaphore
 	HANDLE mutexCmd; // locks cmds
-	HANDLE hReadSem;
+	HANDLE hReadSem; // read semaphore
 	DWORD time;
+	HANDLE hCmdEvent;
 	Game game[2]; // game 1 for singleplayer and game2 for multiplayer
 };
 
@@ -35,12 +57,6 @@ struct FROG_STRUCT {
 
 struct SHAREDMEMGAME {
 	Game game[2];
-};
-
-struct COMMAND {
-	DWORD parameter;
-	DWORD parameter1;
-	DWORD cmd;
 };
 
 

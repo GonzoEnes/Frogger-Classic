@@ -1,0 +1,3 @@
+﻿  operator.c
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(199,7): warning C4101: 'game': unreferenced local variable
+  Operator.vcxproj -> C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe

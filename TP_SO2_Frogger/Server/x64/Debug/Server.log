@@ -1,0 +1,6 @@
+﻿  server.c
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(160,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(174,106): warning C4047: '!=': 'int' differs in levels of indirection from 'void *'
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(190,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(200): warning C4715: 'changeDirection': not all control paths return a value
+  Server.vcxproj -> C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
