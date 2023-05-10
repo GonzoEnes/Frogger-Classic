@@ -41,6 +41,11 @@ int _tmain(int argc, TCHAR** argv) {
 		int convertLanes = _tstoi(argv[1]); // a primeira palavra da linha de comandos será o numero de faixas
 		int convertSpeed = _tstoi(argv[2]); // e aqui a velocidade
 
+		if (convertLanes == 10) {
+			_tprintf(_T("Máximo de faixas é apenas 10! Insira um número válido!\n"));
+			return ERROR_CODE_CANT_CREATE_REG;
+		}
+
 		// meter os valores da linha de comandos dentro das keys para guardar no reg
 
 		// ver melhor depois a parte de, quando é a primeira vez a executar o programa e não existe nada no reg e o 
