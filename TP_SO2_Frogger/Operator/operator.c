@@ -193,57 +193,56 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 	return 0;
 }
 
-int initBoard(pData data) {
+void initBoard(pData data) {
 
 	for (DWORD i = 0; i < data->game[0].rows; i++) {
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), TEXT("-"));
+			//data->game[0].board[i][j] = 'á';
+			data->game[0].board[i][j] = _T('-'); // ver melhor
+			//_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), _T("-")); // perguntar ao prof
 		}
 	}
-
-	return 1;
 }
 
 
 void showBoard(pData data) {
-	data->game[0].rows = 10; // tirar estas linhas, é só debug para construir o board
-	data->game[0].columns = 20;
-
-	data->game[1].rows = 10;
-	data->game[1].columns = 20;
 	//WaitForSingleObject(data->hMutex, INFINITE);
 	//_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
+
+	//_tprintf(_T("%d %d"), data->game[0].rows, data->game[0].columns);
 	for (DWORD i = 0; i < data->game[0].rows; i++)
 	{
-		_tprintf(TEXT("\n"));
+		_tprintf(_T("\n"));
 		
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			_tprintf(TEXT("%c "), data->game[0].board[i][j]);
+			_tprintf(TEXT("%c"), data->game[0].board[i][j]);
 		}	
 	}
 	
 	_tprintf(TEXT("\n\n"));
-
 	//ReleaseMutex(data->hMutex);
 }
 
 int _tmain(TCHAR** argv, int argc) {
 	HANDLE cmdThread;
 	Data data;
-	Game game[2] = {0};
+	Game game[2] = { 0 };
 	data.game[0] = game[0];
 	data.game[1] = game[1];
 
 	data.game->cars = malloc(8 * sizeof(Car)); // debug tirar depois
 
+	data.game[0].rows = (DWORD)10; // tirar estas linhas, é só debug para construir o board
+	data.game[0].columns = (DWORD)20;
+
+	data.game[1].rows = (DWORD)10;
+	data.game[1].columns = (DWORD)20;
+
 	data.game[0].isShutdown = FALSE;
 	data.game[1].isShutdown = FALSE;
 
-	
-
 	data.game[0].isSuspended = FALSE;
 	data.game[1].isSuspended = FALSE;
-	data.game->isShutdown = FALSE;
 
 	// vars de struct de sharedMM
 #ifdef UNICODE
@@ -263,7 +262,7 @@ int _tmain(TCHAR** argv, int argc) {
 		return -2;
 	}
 
-	//initBoard(&data);
+	initBoard(&data);
 	showBoard(&data);
 
 	cmdThread = CreateThread(NULL, 0, sendCmdThread, &data, 0, NULL);

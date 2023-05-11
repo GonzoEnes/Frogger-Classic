@@ -178,6 +178,17 @@ DWORD insertObstacle(pData data, int row, int column) {
 	data->game->board[row][column] = obstacle; // insert obstacle in 
 	return 1;
 }
+DWORD insertFrog(pData data) {
+	
+	if()
+
+
+
+
+
+}
+
+
 
 DWORD changeDirection(pData data) {
 	data->game->nCars = 1; // debug tirar depois obv
@@ -240,7 +251,34 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	return 0;
 }
 
-	
+BOOL readRegConfigs(pData data, pRegConfig reg) {
+	//check if it can open reg key
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, reg->keyPath, 0, KEY_ALL_ACCESS, &reg->key) != ERROR_SUCCESS) {
+		_tprintf(_T("\nKey doesn't exist. Creating...\n"));
+
+		if (RegCreateKey(HKEY_CURRENT_USER, reg->keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &reg->key, &reg->dposition) == ERROR_SUCCESS) {
+			_tprintf(_T("\nKey created successfully.\n"));
+			// atribuir os valores para dentro da struct
+
+			DWORD lanes = 10;
+			DWORD speed = 5; // change if necessary
+
+			DWORD setLanes = RegSetValueEx(reg->key, _T("Lanes"), 0, REG_DWORD, (LPBYTE)&lanes, sizeof(DWORD));
+			DWORD setSpeed = RegSetValueEx(reg->key, _T("Speed"), 0, REG_DWORD, (LPBYTE)&speed, sizeof(DWORD));
+
+			if (setLanes != ERROR_SUCCESS || setSpeed != ERROR_SUCCESS) {
+				_tprintf(_T("\nCan't set values for Frogger.\n"));
+				return FALSE;
+			}
+		}
+	}
+
+	// after values are set, put them in the struct
+
+	// check for gameType (solo/duo) later
+
+	DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].nCars, 250);
+}
 
 
 
@@ -265,13 +303,12 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	}*/
 
 
-
-
 int _tmain(int argc, TCHAR** argv) {
 
 	// aqui são as vars
 	HANDLE hReceiveCmdThread;
 	Game game[2] = { 0 };
+	RegConfig reg;
 	Data data;
 
 	data.game[0] = game[0];
@@ -285,6 +322,9 @@ int _tmain(int argc, TCHAR** argv) {
 	data.game[0].isSuspended = FALSE;
 	data.game[1].isSuspended = FALSE;
 	
+
+	data.game->nCars = 8;
+
 #ifdef UNICODE
 	_setmode(_fileno(stdin), _O_WTEXT);
 	_setmode(_fileno(stdout), _O_WTEXT);
@@ -294,6 +334,25 @@ int _tmain(int argc, TCHAR** argv) {
 	if (!createSharedMemoryAndInit(&data)) {
 		_tprintf(_T("\nCan't create shared memory.\n"));
 		return 0;
+	}
+
+	if (argc == 3) {
+		data.game->rows = _ttoi(argv[1]);
+
+		_tprintf(_T("Lanes = %d\n"), data.game->rows);
+
+		for (int i = 0; i < data.game->nCars; i++) {
+			data.game->cars[i].speed = _ttoi(argv[2]);
+			_tprintf(_T("Speed of car number %d = %d\n"), i+1, data.game->cars[i].speed);
+		}
+	}
+	else {
+		if (!readRegConfigs(&data, &reg)) {
+			_tprintf(_T("\nError reading configs from registry.\n"));
+			return 0;
+		}
+
+		_tprintf(_T("\nOla"));
 	}
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);

@@ -11,10 +11,18 @@ typedef struct SHAREDMEMCOMMAND ShmCommand, * pShmCommand;
 typedef struct SHAREDMEMGAME ShmGame, * pShmGame;
 typedef struct DATA Data, * pData;
 typedef struct GAME Game, * pGame;
+typedef struct REGISTRYCONFIG RegConfig, * pRegConfig;
+
+struct REGISTRYCONFIG {
+	HKEY key;
+	TCHAR keyPath[BUFFER];
+	DWORD dposition;
+	TCHAR name[BUFFER];
+};
 
 struct GAME {
-	DWORD rows;
 	TCHAR board[10][20];
+    DWORD rows;
 	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
 	DWORD nCars;
 	pCars cars;
@@ -43,6 +51,7 @@ struct DATA {
 	DWORD time;
 	HANDLE hCmdEvent;
 	Game game[2]; // game 1 for singleplayer and game2 for multiplayer
+	Frog frog;
 };
 
 struct SHAREDMEMCOMMAND {
@@ -50,8 +59,8 @@ struct SHAREDMEMCOMMAND {
 };
 
 struct FROG_STRUCT {
-	int nLives;
-	//pos 
+	int nLives, nFroggs;
+	int pos;
 	//status
 };
 
