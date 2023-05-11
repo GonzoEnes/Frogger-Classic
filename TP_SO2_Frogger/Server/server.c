@@ -191,8 +191,10 @@ DWORD changeDirection(pData data) {
 		switch (data->game->cars[i].direction) {
 		case TRUE: // andar para a direita
 			data->game->cars[i].direction = FALSE; // andar para a esquerda
+			_tprintf(_T("\nDirections changed from LEFT - RIGHT to RIGHT - LEFT\n"));
 		case FALSE:
-			data->game->cars[i].direction = TRUE;
+			data->game->cars[i].direction = TRUE; // andar para a direita
+			_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
 		default:
 			return -2;
 		}
@@ -238,6 +240,12 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	return 0;
 }
 
+	
+
+
+
+
+
 	/*DWORD initEnvironment(Data* data) {
 
 		for (DWORD i = 0; i < data->game[0].rows; i++) {
@@ -255,6 +263,8 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 
 		return 1;
 	}*/
+
+
 
 
 int _tmain(int argc, TCHAR** argv) {
@@ -293,6 +303,8 @@ int _tmain(int argc, TCHAR** argv) {
 	}
 
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
+	
 	CloseHandle(hReceiveCmdThread);
+	
 	return 0;
 }

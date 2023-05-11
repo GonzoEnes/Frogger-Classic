@@ -193,18 +193,65 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 	return 0;
 }
 
+int initBoard(pData data) {
+
+	for (DWORD i = 0; i < data->game[0].rows; i++) {
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), TEXT("-"));
+		}
+	}
+
+	return 1;
+}
+
+
+void showBoard(pData data) {
+	data->game[0].rows = 10; // tirar estas linhas, é só debug para construir o board
+	data->game[0].columns = 20;
+
+	data->game[1].rows = 10;
+	data->game[1].columns = 20;
+	//WaitForSingleObject(data->hMutex, INFINITE);
+	//_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
+	for (DWORD i = 0; i < data->game[0].rows; i++)
+	{
+		_tprintf(TEXT("\n"));
+		
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			_tprintf(TEXT("%c "), data->game[0].board[i][j]);
+		}	
+	}
+	
+	_tprintf(TEXT("\n\n"));
+
+	//ReleaseMutex(data->hMutex);
+}
+
 int _tmain(TCHAR** argv, int argc) {
 	HANDLE cmdThread;
 	Data data;
-	Game game[2];
+	Game game[2] = {0};
+	data.game[0] = game[0];
+	data.game[1] = game[1];
+
+	data.game->cars = malloc(8 * sizeof(Car)); // debug tirar depois
+
+	data.game[0].isShutdown = FALSE;
+	data.game[1].isShutdown = FALSE;
+
+	
+
+	data.game[0].isSuspended = FALSE;
+	data.game[1].isSuspended = FALSE;
 	data.game->isShutdown = FALSE;
+
 	// vars de struct de sharedMM
 #ifdef UNICODE
 	_setmode(_fileno(stdin), _O_WTEXT);
 	_setmode(_fileno(stdout), _O_WTEXT);
 	_setmode(_fileno(stderr), _O_WTEXT);
 #endif
-
+	
 	//verificação se o server está a correr 
 	if (OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, SEM_WRITE_NAME) == NULL) {
 		_tprintf(_T("\nCan't launch OPERATOR. Server isn't running.\n"));
@@ -215,6 +262,9 @@ int _tmain(TCHAR** argv, int argc) {
 		_tprintf(_T("\nCan't init shared memory...\n"));
 		return -2;
 	}
+
+	//initBoard(&data);
+	showBoard(&data);
 
 	cmdThread = CreateThread(NULL, 0, sendCmdThread, &data, 0, NULL);
 	if (cmdThread == NULL) {
@@ -237,6 +287,7 @@ int _tmain(TCHAR** argv, int argc) {
 	CloseHandle(data.hFileMapMemory);
 	CloseHandle(data.hMutex);
 	CloseHandle(data.hReadSem);
+	
 
 	return 0;
 }
