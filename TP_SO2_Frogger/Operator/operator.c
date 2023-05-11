@@ -81,6 +81,8 @@ BOOL createSharedMemoryAndInit(pData data) {
 	return TRUE;
 }
 
+
+
 DWORD WINAPI sendCmdThread(LPVOID params) {
 	pData data = (pData)params;
 
@@ -102,16 +104,16 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 
 	do {
 		_tprintf(_T("\nComando: "));
-		
+
 		_getts_s(opt, _countof(opt)); // fetches user choice with limit of strlen(opt)
-		
+
 		token = _tcstok_s(opt, TEXT(" "), &next);
 
 		if (_tcscmp(token, _T("stopcars")) == 0) {
 			WaitForSingleObject(data->mutexCmd, INFINITE);
 
-			//_tprintf(_T("%s"), token);
-			
+				//_tprintf(_T("%s"), token);
+
 			if (i == BUFFERSIZE) {
 				i = 0;
 			}
@@ -119,13 +121,13 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 			cmd.cmd = 1; // call to first command
 
 			CopyMemory(&(data->sharedMemCmd->operatorCmds[i]), &cmd, sizeof(Command));
-		
+
 			token = _tcstok_s(NULL, TEXT(" "), &next);
 			if (token != NULL)
 				cmd.parameter = _ttoi(token); // get value from token
 			if (cmd.parameter != 0 && token != NULL) // if it read correctly
 				CopyMemory(&(data->sharedMemCmd->operatorCmds[i]), &cmd, sizeof(Command)); // send to server
-			
+
 			i++; // move to next cmd
 
 			ReleaseMutex(data->mutexCmd); // unlock access
@@ -146,7 +148,7 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 				cmd.parameter = _ttoi(token); // get value from token
 				cmd.parameter1 = _ttoi(next);
 			}
-				
+
 			if (cmd.parameter != 0 && token != NULL && cmd.parameter1 != 0) // if it read correctly
 				CopyMemory(&(data->sharedMemCmd->operatorCmds[i]), &cmd, sizeof(Command)); // send to server
 
@@ -164,7 +166,7 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 			}
 
 			cmd.cmd = 3; // call to third command
-		
+
 			CopyMemory(&(data->sharedMemCmd->operatorCmds[i]), &cmd, sizeof(Command)); // send to server
 
 			i++; // move to next cmd
@@ -206,29 +208,52 @@ void initBoard(pData data) {
 
 
 void showBoard(pData data) {
-	//WaitForSingleObject(data->hMutex, INFINITE);
-	//_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
+		//WaitForSingleObject(data->hMutex, INFINITE);
+		//_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
 
-	//_tprintf(_T("%d %d"), data->game[0].rows, data->game[0].columns);
+		//_tprintf(_T("%d %d"), data->game[0].rows, data->game[0].columns);
 	for (DWORD i = 0; i < data->game[0].rows; i++)
 	{
 		_tprintf(_T("\n"));
-		
+
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
 			_tprintf(TEXT("%c"), data->game[0].board[i][j]);
-		}	
+		}
 	}
-	
+
 	_tprintf(TEXT("\n\n"));
-	//ReleaseMutex(data->hMutex);
+		//ReleaseMutex(data->hMutex);
+}
+
+DWORD insertFrog(pData data) {
+
+	for (DWORD i = 0; i < data->game[0].rows; i++) {
+		DWORD aux = 0;
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			aux = rand() % data->game->columns;
+			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
+
+
+				_tprintf(_T("aux=: %d"), aux);
+
+				data->game[0].board[i][aux] = _T('s');
+				data->game->nFrogs++;
+
+			}
+		}
+	}
+	return 1;
 }
 
 int _tmain(TCHAR** argv, int argc) {
+	srand(time(NULL));
 	HANDLE cmdThread;
 	Data data;
 	Game game[2] = { 0 };
 	data.game[0] = game[0];
 	data.game[1] = game[1];
+	data.game->frogs = malloc(sizeof(Frog));
+	data.game[0].nFrogs = 0;
 
 	data.game->cars = malloc(8 * sizeof(Car)); // debug tirar depois
 
@@ -264,6 +289,9 @@ int _tmain(TCHAR** argv, int argc) {
 
 	initBoard(&data);
 	showBoard(&data);
+	insertFrog(&data);
+	showBoard(&data);
+	
 
 	cmdThread = CreateThread(NULL, 0, sendCmdThread, &data, 0, NULL);
 	if (cmdThread == NULL) {
@@ -287,6 +315,5 @@ int _tmain(TCHAR** argv, int argc) {
 	CloseHandle(data.hMutex);
 	CloseHandle(data.hReadSem);
 	
-
 	return 0;
 }

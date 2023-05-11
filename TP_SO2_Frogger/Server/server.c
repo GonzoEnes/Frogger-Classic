@@ -178,16 +178,21 @@ DWORD insertObstacle(pData data, int row, int column) {
 	data->game->board[row][column] = obstacle; // insert obstacle in 
 	return 1;
 }
+
 DWORD insertFrog(pData data) {
-	
-	if()
+	DWORD aux;
+	for (DWORD i = 0; i < data->game[0].rows; i++) {
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
+				aux = j * rand() % data->game->columns;
 
+				data->game[0].board[i][aux] = _T('s');
 
+			}
+		}
 
-
-
+	}
 }
-
 
 
 DWORD changeDirection(pData data) {
@@ -253,23 +258,33 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 
 BOOL readRegConfigs(pData data, pRegConfig reg) {
 	//check if it can open reg key
+
+	DWORD size = SIZE_DWORD;
+	//TCHAR key_path[MAX] = _T("SOFTWARE\\TP_SO2\\Values");
+
+	_tcscpy_s(reg->keyPath, BUFFER, _T("SOFTWARE\\TP_SO2"));
+
 	if (RegOpenKeyEx(HKEY_CURRENT_USER, reg->keyPath, 0, KEY_ALL_ACCESS, &reg->key) != ERROR_SUCCESS) {
 		_tprintf(_T("\nKey doesn't exist. Creating...\n"));
 
-		if (RegCreateKey(HKEY_CURRENT_USER, reg->keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &reg->key, &reg->dposition) == ERROR_SUCCESS) {
+		if (RegCreateKeyEx(HKEY_CURRENT_USER, reg->keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &reg->key, &reg->dposition) == ERROR_SUCCESS) {
 			_tprintf(_T("\nKey created successfully.\n"));
 			// atribuir os valores para dentro da struct
 
 			DWORD lanes = 10;
 			DWORD speed = 5; // change if necessary
 
-			DWORD setLanes = RegSetValueEx(reg->key, _T("Lanes"), 0, REG_DWORD, (LPBYTE)&lanes, sizeof(DWORD));
-			DWORD setSpeed = RegSetValueEx(reg->key, _T("Speed"), 0, REG_DWORD, (LPBYTE)&speed, sizeof(DWORD));
+			DWORD setLanes = RegSetValueEx(reg->key, _T("Lanes"), 0, REG_DWORD, (LPBYTE)&lanes, sizeof(DWORD), &size);
+			DWORD setSpeed = RegSetValueEx(reg->key, _T("Speed"), 0, REG_DWORD, (LPBYTE)&speed, sizeof(DWORD), &size);
 
 			if (setLanes != ERROR_SUCCESS || setSpeed != ERROR_SUCCESS) {
 				_tprintf(_T("\nCan't set values for Frogger.\n"));
 				return FALSE;
 			}
+		}
+		else {
+			_tprintf(TEXT("\nCouldn't create key in SOFTWARE\\TP_SO2.\n"));
+			return FALSE;
 		}
 	}
 
@@ -277,11 +292,16 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 
 	// check for gameType (solo/duo) later
 
-	DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].nCars, 250);
+	DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
+	DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
+
+	if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
+		_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
+		return FALSE;
+	}
+
+	return TRUE;
 }
-
-
-
 
 
 	/*DWORD initEnvironment(Data* data) {
@@ -308,7 +328,7 @@ int _tmain(int argc, TCHAR** argv) {
 	// aqui são as vars
 	HANDLE hReceiveCmdThread;
 	Game game[2] = { 0 };
-	RegConfig reg;
+	RegConfig reg = {0};
 	Data data;
 
 	data.game[0] = game[0];
@@ -338,13 +358,16 @@ int _tmain(int argc, TCHAR** argv) {
 
 	if (argc == 3) {
 		data.game->rows = _ttoi(argv[1]);
+		data.game->carSpeed = _ttoi(argv[2]);
 
 		_tprintf(_T("Lanes = %d\n"), data.game->rows);
 
-		for (int i = 0; i < data.game->nCars; i++) {
+		/*for (int i = 0; i < data.game->nCars; i++) {
 			data.game->cars[i].speed = _ttoi(argv[2]);
 			_tprintf(_T("Speed of car number %d = %d\n"), i+1, data.game->cars[i].speed);
-		}
+		}*/
+
+		_tprintf(TEXT("Speed of cars = %d"), data.game->carSpeed);
 	}
 	else {
 		if (!readRegConfigs(&data, &reg)) {
@@ -352,7 +375,16 @@ int _tmain(int argc, TCHAR** argv) {
 			return 0;
 		}
 
-		_tprintf(_T("\nOla"));
+		_tprintf(_T("\nValues from reg are set.\n"));
+
+		_tprintf(_T("\nLanes = %d\n"), data.game->rows);
+
+		_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
+
+		/*for (int i = 0; i < data.game->nCars; i++) {
+			data.game->cars[i].speed = _ttoi(argv[2]);
+			_tprintf(_T("Speed of car number %d = %d\n"), i + 1, data.game->cars[i].speed);
+		}*/
 	}
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
@@ -360,6 +392,9 @@ int _tmain(int argc, TCHAR** argv) {
 		_tprintf(_T("\nCan't create RECEIVECMDTHREAD [%d]"), GetLastError());
 		return 0;
 	}
+
+
+	RegCloseKey(reg.key);
 
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
 	

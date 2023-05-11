@@ -25,6 +25,9 @@ struct GAME {
     DWORD rows;
 	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
 	DWORD nCars;
+	DWORD nFrogs;
+	pFrog frogs;
+	DWORD carSpeed; // ver com o prof
 	pCars cars;
 	DWORD suspended;
 	DWORD time;
@@ -51,7 +54,7 @@ struct DATA {
 	DWORD time;
 	HANDLE hCmdEvent;
 	Game game[2]; // game 1 for singleplayer and game2 for multiplayer
-	Frog frog;
+	//Frog frog;
 };
 
 struct SHAREDMEMCOMMAND {

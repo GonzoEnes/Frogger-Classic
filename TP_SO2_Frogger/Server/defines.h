@@ -9,5 +9,6 @@
 #define EVENT_NAME TEXT("COMMANDEVENT") //Name of the command event
 #define COMMAND_MUTEX_NAME TEXT("COMMANDMUTEX") //Name of the command mutex
 #define BUFFER 256
+#define SIZE_DWORD 256*sizeof(DWORD)
 #define BUFFERSIZE 10
 #endif // !NAMES
