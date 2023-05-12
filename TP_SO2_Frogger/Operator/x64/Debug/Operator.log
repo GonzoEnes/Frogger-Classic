@@ -1,5 +1,5 @@
 ﻿  operator.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(251,12): warning C4098: 'insertCars': 'void' function returning a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(275,12): warning C4013: 'time' undefined; assuming extern returning int
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(242): warning C4716: 'insertFrog': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(271,12): warning C4098: 'insertCars': 'void' function returning a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(334,12): warning C4013: 'time' undefined; assuming extern returning int
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(262): warning C4716: 'insertFrog': must return a value
   Operator.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe

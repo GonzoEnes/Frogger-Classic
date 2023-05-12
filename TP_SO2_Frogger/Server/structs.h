@@ -47,6 +47,7 @@ struct DATA {
 	HANDLE hFileMapFrogger; // shm mm for game
 	HANDLE hFileMapMemory; // memory from cmd
 	pShmCommand sharedMemCmd; // access to commands from operator
+	pShmGame sharedMemGame;
 	HANDLE hMutex; // locks access
 	HANDLE hWriteSem; // write semaphore
 	HANDLE mutexCmd; // locks cmds

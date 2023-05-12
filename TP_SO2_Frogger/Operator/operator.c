@@ -12,6 +12,25 @@ BOOL createSharedMemoryAndInit(pData data) {
 	BOOL firstProcess = FALSE;
 	_tprintf(TEXT("\n\nStarting operator configs...\n\n"));
 
+	data->hFileMapFrogger = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_GAME);
+
+	if (data->hFileMapFrogger == NULL) { // Map
+		firstProcess = TRUE;
+		data->hFileMapFrogger = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(ShmGame), SHM_NAME_GAME);
+
+		if (data->hFileMapFrogger == NULL) {
+			_tprintf(TEXT("\nError CreateFileMapping (%d).\n"), GetLastError());
+			return FALSE;
+		}
+	} //create sharedMem for game
+
+	data->sharedMemGame = (ShmGame*)MapViewOfFile(data->hFileMapFrogger, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmGame)); // Shared Memory
+	if (data->sharedMemGame == NULL) {
+		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
+		CloseHandle(data->hFileMapFrogger);
+		return FALSE;
+	} // map to pointer of sharedmemgame (assign space to var)
+
 	data->hFileMapMemory = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_MESSAGE);
 	if (data->hFileMapMemory == NULL) {
 		data->hFileMapMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(ShmCommand), SHM_NAME_MESSAGE);
@@ -34,8 +53,8 @@ BOOL createSharedMemoryAndInit(pData data) {
 	data->hMutex = CreateMutex(NULL, FALSE, MUTEX_NAME);
 	if (data->hMutex == NULL) {
 		_tprintf(TEXT("\nError creating mutex (%d).\n"), GetLastError());
-		//UnmapViewOfFile(data->sharedMemGame);
-		//CloseHandle(data->hMapFileGame);
+		UnmapViewOfFile(data->sharedMemGame);
+		CloseHandle(data->hFileMapFrogger);
 		CloseHandle(data->hFileMapMemory);
 		UnmapViewOfFile(data->sharedMemCmd);
 		return FALSE;
@@ -44,8 +63,8 @@ BOOL createSharedMemoryAndInit(pData data) {
 	data->hWriteSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_WRITE_NAME);
 	if (data->hWriteSem == NULL) {
 		_tprintf(TEXT("\nError creating writting semaphore: (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(data->sharedMemGame);
+		CloseHandle(data->hFileMapFrogger);
 		CloseHandle(data->hMutex);
 		CloseHandle(data->hFileMapMemory);
 		UnmapViewOfFile(data->sharedMemCmd);
@@ -55,8 +74,8 @@ BOOL createSharedMemoryAndInit(pData data) {
 	data->hReadSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_READ_NAME);
 	if (data->hReadSem == NULL) {
 		_tprintf(TEXT("\nError creating reading semaphore (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(data->sharedMemGame);
+		CloseHandle(data->hFileMapFrogger);
 		CloseHandle(data->hMutex);
 		CloseHandle(data->hWriteSem);
 		CloseHandle(data->hFileMapMemory);
@@ -67,8 +86,8 @@ BOOL createSharedMemoryAndInit(pData data) {
 	data->hCmdEvent = CreateEvent(NULL, TRUE, FALSE, EVENT_NAME);
 	if (data->hCmdEvent == NULL) {
 		_tprintf(TEXT("\nError creating command event (%d).\n"), GetLastError());
-		//UnmapViewOfFile(data->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(data->sharedMemGame);
+		CloseHandle(data->hFileMapFrogger);
 		CloseHandle(data->hMutex);
 		CloseHandle(data->hWriteSem);
 		CloseHandle(data->hReadSem);
@@ -131,8 +150,9 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 			i++; // move to next cmd
 
 			ReleaseMutex(data->mutexCmd); // unlock access
-			SetEvent(data->hCmdEvent);
-			ResetEvent(data->hCmdEvent);
+			SetEvent(data->hCmdEvent); // flag event as set 
+			ResetEvent(data->hCmdEvent); // unflag
+			//gonzo mata te
 		}
 
 		else if (_tcscmp(token, _T("insert")) == 0) {
@@ -265,10 +285,30 @@ void insertCars(pData data) {
 				data->game[0].board[i][j] = _T('c');
 				count++;
 			}
-
 		}
 	}
+}
 
+void moveCars(pData data) {
+	for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+		for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+			if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+				TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
+				data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+				data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+			}
+
+			else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+				data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
+			}
+
+			else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+				TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
+				data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+				data->game[0].board[i][j] = prevElement;
+			}
+		}
+	}
 }
 
 int _tmain(TCHAR** argv, int argc) {
@@ -318,7 +358,8 @@ int _tmain(TCHAR** argv, int argc) {
 	insertCars(&data);
 	insertFrog(&data);
 	showBoard(&data);
-	
+	moveCars(&data);
+	showBoard(&data);
 
 	cmdThread = CreateThread(NULL, 0, sendCmdThread, &data, 0, NULL);
 	if (cmdThread == NULL) {
@@ -336,7 +377,7 @@ int _tmain(TCHAR** argv, int argc) {
 	WaitForSingleObject(cmdThread, INFINITE);
 
 	UnmapViewOfFile(data.sharedMemCmd);
-	//UnmapViewOfFile(data.sharedMemGame);
+	UnmapViewOfFile(data.sharedMemGame);
 	CloseHandle(data.hFileMapFrogger);
 	CloseHandle(data.hFileMapMemory);
 	CloseHandle(data.hMutex);
