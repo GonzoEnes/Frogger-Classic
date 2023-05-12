@@ -225,24 +225,50 @@ void showBoard(pData data) {
 		//ReleaseMutex(data->hMutex);
 }
 
-DWORD insertFrog(pData data) {
+DWORD insertFrog(pData data) { // from shared memory give to operator
+	DWORD aux;
 
 	for (DWORD i = 0; i < data->game[0].rows; i++) {
-		DWORD aux = 0;
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			aux = rand() % data->game->columns;
-			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
-
-
-				_tprintf(_T("aux=: %d"), aux);
-
-				data->game[0].board[i][aux] = _T('s');
-				data->game->nFrogs++;
-
+			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) { //&& strcmp(data->game[0].board[i][j],_T("-")==0)) {
+				while (data->game[0].nFrogs < 2) {
+					aux = rand() % data->game->columns;
+					data->game[0].board[i][aux] = _T('s');
+					data->game[0].nFrogs++;
+				}
 			}
 		}
 	}
-	return 1;
+}
+
+void insertCars(pData data) {
+
+	DWORD count = 0;
+	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
+	_tprintf(TEXT("\n%d"), data->game[0].nCars);
+	if (data->game[0].nCars == 0) {
+		_tprintf(TEXT("Imprimiu 0 carros :)"));
+		return -1;
+	}
+	while (data->game[0].nCars > count) { // insere carros até o número desejado ser alcançado
+		DWORD i = rand() % (data->game[0].rows - 2) + 1; // escolhe uma linha aleatória (exceto a primeira e a última)
+		DWORD j = rand() % data->game[0].columns; // escolhe uma coluna aleatória
+
+		if (data->game[0].board[i][j] != _T('c')) { // verifica se a posição está livre
+			DWORD carsInLine = 0;
+			for (DWORD k = 0; k < data->game[0].columns; k++) { // conta o número de carros na linha atual
+				if (data->game[0].board[i][k] == _T('c')) {
+					carsInLine++;
+				}
+			}
+			if (carsInLine < 8) { // verifica se ainda há espaço para mais carros na linha
+				data->game[0].board[i][j] = _T('c');
+				count++;
+			}
+
+		}
+	}
+
 }
 
 int _tmain(TCHAR** argv, int argc) {
@@ -289,6 +315,7 @@ int _tmain(TCHAR** argv, int argc) {
 
 	initBoard(&data);
 	showBoard(&data);
+	insertCars(&data);
 	insertFrog(&data);
 	showBoard(&data);
 	

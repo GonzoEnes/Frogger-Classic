@@ -179,18 +179,19 @@ DWORD insertObstacle(pData data, int row, int column) {
 	return 1;
 }
 
-DWORD insertFrog(pData data) {
+DWORD insertFrog(pData data) { // from shared memory give to operator
 	DWORD aux;
+
 	for (DWORD i = 0; i < data->game[0].rows; i++) {
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
-				aux = j * rand() % data->game->columns;
-
-				data->game[0].board[i][aux] = _T('s');
-
+			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) { //&& strcmp(data->game[0].board[i][j],_T("-")==0)) {
+				while (data->game[0].nFrogs < 2) {
+					aux = rand() % data->game->columns;
+					data->game[0].board[i][aux] = _T('s');
+					data->game[0].nFrogs++;
+				}
 			}
 		}
-
 	}
 }
 
@@ -386,6 +387,8 @@ int _tmain(int argc, TCHAR** argv) {
 			_tprintf(_T("Speed of car number %d = %d\n"), i + 1, data.game->cars[i].speed);
 		}*/
 	}
+
+
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
