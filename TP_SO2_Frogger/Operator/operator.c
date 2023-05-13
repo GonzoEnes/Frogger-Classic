@@ -226,6 +226,17 @@ void initBoard(pData data) {
 	}
 }
 
+DWORD WINAPI receiveGameData(LPVOID params) {
+	pData data = (pData)params;
+
+	while (!data->game[0].isShutdown && !data->game[0].isSuspended) {
+		WaitForSingleObject(data->hReadSem, INFINITE); // wait for sync mechanisms
+		WaitForSingleObject(data->hMutex, INFINITE);
+		CopyMemory(&data->game[0], &data->sharedMemGame->game[0], sizeof(Game)); // get data from sharedMemGame pointer that has info on game
+		ReleaseMutex(data->hMutex); // release mutex
+		ReleaseSemaphore(data->hWriteSem, 1, NULL); // release write sem after its been used
+	}
+}
 
 void showBoard(pData data) {
 		//WaitForSingleObject(data->hMutex, INFINITE);
@@ -289,7 +300,25 @@ void insertCars(pData data) {
 	}
 }
 
-void moveCars(pData data) {
+VOID screenClear() {
+	for (DWORD i = 0; i < 30; i++) {
+		_tprintf(_T("\n"));
+	}
+}
+
+DWORD WINAPI showBoardConstant(LPVOID params) {
+	pData data = (pData)params;
+
+	while (!data->game->isShutdown) {
+		Sleep(2000);
+		screenClear();
+		showBoard(data);
+	}
+
+	return 0;
+}
+
+VOID moveCars(pData data) {
 	for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
 		for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
 			if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
@@ -314,6 +343,8 @@ void moveCars(pData data) {
 int _tmain(TCHAR** argv, int argc) {
 	srand(time(NULL));
 	HANDLE cmdThread;
+	HANDLE receiveGameInfoThread;
+	HANDLE hPermaShowBoard;
 	Data data;
 	Game game[2] = { 0 };
 	data.game[0] = game[0];
@@ -353,6 +384,7 @@ int _tmain(TCHAR** argv, int argc) {
 		return -2;
 	}
 
+	// debug tirar depois
 	initBoard(&data);
 	showBoard(&data);
 	insertCars(&data);
@@ -367,6 +399,20 @@ int _tmain(TCHAR** argv, int argc) {
 		return -1;
 	}
 
+	receiveGameInfoThread = CreateThread(NULL, 0, receiveGameData, &data, 0, NULL);
+
+	if (receiveGameInfoThread == NULL) {
+		_tprintf(_T("\nCan't create RECEIVEGAMEINFOTHREAD. [%d]"), GetLastError());
+		return -2;
+	}
+
+	/*hPermaShowBoard = CreateThread(NULL, 0, showBoardConstant, &data, 0, NULL);
+	
+	if (hPermaShowBoard == NULL) {
+		_tprintf(_T("\nCan't create SHOWBOARDCONSTANT thread. [%d]\n"), GetLastError());
+		return -3;
+	}*/ // comentada por agora porque senão está sempre a dar sleep e não recebe info nenhuma, corrigir isso depois
+
 	while (1) {
 		if (data.game->isShutdown) {
 			_tprintf(_T("\nGAME SHUTTING DOWN...\n"));
@@ -375,7 +421,7 @@ int _tmain(TCHAR** argv, int argc) {
 	}
 
 	WaitForSingleObject(cmdThread, INFINITE);
-
+	WaitForSingleObject(receiveGameInfoThread, INFINITE);
 	UnmapViewOfFile(data.sharedMemCmd);
 	UnmapViewOfFile(data.sharedMemGame);
 	CloseHandle(data.hFileMapFrogger);

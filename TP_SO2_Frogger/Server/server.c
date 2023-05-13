@@ -10,24 +10,24 @@ BOOL createSharedMemoryAndInit(pData p) {
 	BOOL firstProcess = FALSE;
 	_tprintf(TEXT("\n\nConfigs for the game initializing...\n"));
 
-	/*p->hFileMapFrogger = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_GAME);
+	p->hFileMapFrogger = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_GAME);
 
-	if (p->hMapFileGame == NULL) { // Map
+	if (p->hFileMapFrogger == NULL) { // Map
 		firstProcess = TRUE;
-		p->hMapFileGame = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SharedMemGame), SHM_NAME_GAME);
+		p->hFileMapFrogger = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(ShmGame), SHM_NAME_GAME);
 
-		if (p->hMapFileGame == NULL) {
+		if (p->hFileMapFrogger == NULL) {
 			_tprintf(TEXT("\nError CreateFileMapping (%d).\n"), GetLastError());
 			return FALSE;
 		}
 	}
 
-	p->sharedMemGame = (SharedMemGame*)MapViewOfFile(p->hMapFileGame, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SharedMemGame)); // Shared Memory
+	p->sharedMemGame = (pShmGame)MapViewOfFile(p->hFileMapFrogger, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmGame)); // Shared Memory
 	if (p->sharedMemGame == NULL) {
 		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
-		CloseHandle(p->hMapFileGame);
+		CloseHandle(p->hFileMapFrogger);
 		return FALSE;
-	}*/
+	}
 
 	p->hFileMapMemory = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_MESSAGE);
 	if (p->hFileMapMemory == NULL) {
@@ -42,8 +42,8 @@ BOOL createSharedMemoryAndInit(pData p) {
 	p->sharedMemCmd = (ShmCommand*)MapViewOfFile(p->hFileMapMemory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmCommand));
 	if (p->sharedMemCmd == NULL) {
 		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hFileMapMemory);
 		return FALSE;
 	}
@@ -51,8 +51,8 @@ BOOL createSharedMemoryAndInit(pData p) {
 	p->hMutex = CreateMutex(NULL, FALSE, MUTEX_NAME);
 	if (p->hMutex == NULL) {
 		_tprintf(TEXT("\nError creating mutex (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hFileMapMemory);
 		UnmapViewOfFile(p->sharedMemCmd);
 		return FALSE;
@@ -61,8 +61,8 @@ BOOL createSharedMemoryAndInit(pData p) {
 	p->hWriteSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_WRITE_NAME);
 	if (p->hWriteSem == NULL) {
 		_tprintf(TEXT("\nError creating writting semaphore: (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hMutex);
 		CloseHandle(p->hFileMapMemory);
 		UnmapViewOfFile(p->sharedMemCmd);
@@ -72,8 +72,8 @@ BOOL createSharedMemoryAndInit(pData p) {
 	p->hReadSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_READ_NAME);
 	if (p->hReadSem == NULL) {
 		_tprintf(TEXT("\nError creating reading semaphore (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hMutex);
 		CloseHandle(p->hWriteSem);
 		CloseHandle(p->hFileMapMemory);
@@ -81,10 +81,10 @@ BOOL createSharedMemoryAndInit(pData p) {
 		return FALSE;
 	}
 
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+	if (GetLastError() == ERROR_ALREADY_EXISTS) { // after failing to create sem, if the error provided is ALREADY_EXISTS assume 2 servers are being run
 		_tprintf(TEXT("\nTrying to run 2 servers at once, shutting down...\n"));
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hMutex);
 		CloseHandle(p->hWriteSem);
 		CloseHandle(p->hReadSem);
@@ -109,12 +109,12 @@ BOOL createSharedMemoryAndInit(pData p) {
 	p->mutexCmd = CreateMutex(NULL, FALSE, COMMAND_MUTEX_NAME);
 	if (p->mutexCmd == NULL) {
 		_tprintf(TEXT("\nError creating command mutex.\n"));
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
+		UnmapViewOfFile(p->sharedMemGame);
+		CloseHandle(p->hFileMapFrogger);
 		CloseHandle(p->hMutex);
 		CloseHandle(p->hWriteSem);
 		CloseHandle(p->hReadSem);
-		//CloseHandle(p->commandEvent);
+		CloseHandle(p->hCmdEvent);
 		CloseHandle(p->hFileMapMemory);
 		UnmapViewOfFile(p->sharedMemCmd);
 		return FALSE;
@@ -145,7 +145,7 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 	return 0;
 }
 
-DWORD stopCars(pData data, int time) {
+DWORD stopCars(pData data, INT time) {
 	_tprintf(_T("\nStopping cars for %d seconds.\n"), time);
 
 	if (time < 0) {
@@ -167,9 +167,9 @@ DWORD stopCars(pData data, int time) {
 	return 1;
 }
 
-DWORD insertObstacle(pData data, int row, int column) {
+DWORD insertObstacle(pData data, INT row, INT column) {
 
-	char obstacle = 'O'; // ver melhor
+	TCHAR obstacle = _T('O'); // ver melhor
 
 	if (data->game->board[row][column] != NULL /*|| row > MAX_ROWS && column > MAX_COLUMNS ver isto melhor*/) { // something is there
 		return -1;
@@ -257,6 +257,22 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	return 0;
 }
 
+DWORD WINAPI sendGameData(LPVOID params) {
+	pData data = (pData)params;
+
+	while (!data->game[0].isShutdown) {
+		WaitForSingleObject(data->hWriteSem, INFINITE);
+		WaitForSingleObject(data->hMutex, INFINITE);
+
+		// check for multiplayer na prox meta, para já copiar apenas os dados
+
+		CopyMemory(&data->sharedMemGame->game[0], &data->game[0], sizeof(Game)); // copia para dentro da shmMem para depois o op ler
+
+		ReleaseMutex(data->hMutex);
+		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui é o sem de escrita porque vai escrever para dentro do pointer da shmMem
+	}
+}
+
 BOOL readRegConfigs(pData data, pRegConfig reg) {
 	//check if it can open reg key
 
@@ -304,30 +320,11 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 	return TRUE;
 }
 
-
-	/*DWORD initEnvironment(Data* data) {
-
-		for (DWORD i = 0; i < data->game[0].rows; i++) {
-			for (DWORD j = 0; j < data->game[0].columns; j++) {
-				if (data->game[0].gameType == 1) {
-					_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), TEXT("-"));
-				}
-				else {
-					for (int k = 0; k < 2; k++) {
-						_tcscpy_s(&data->game[k].board[i][j], sizeof(TCHAR), TEXT("-"));
-					}
-				}
-			}
-		}
-
-		return 1;
-	}*/
-
-
 int _tmain(int argc, TCHAR** argv) {
 
 	// aqui são as vars
 	HANDLE hReceiveCmdThread;
+	HANDLE hSendGameDataThread;
 	Game game[2] = { 0 };
 	RegConfig reg = {0};
 	Data data;
@@ -347,9 +344,9 @@ int _tmain(int argc, TCHAR** argv) {
 	data.game->nCars = 8;
 
 #ifdef UNICODE
-	_setmode(_fileno(stdin), _O_WTEXT);
-	_setmode(_fileno(stdout), _O_WTEXT);
-	_setmode(_fileno(stderr), _O_WTEXT);
+	(void)_setmode(_fileno(stdin), _O_WTEXT);
+	(void)_setmode(_fileno(stdout), _O_WTEXT);
+	(void)_setmode(_fileno(stderr), _O_WTEXT);
 #endif
 
 	if (!createSharedMemoryAndInit(&data)) {
@@ -362,11 +359,6 @@ int _tmain(int argc, TCHAR** argv) {
 		data.game->carSpeed = _ttoi(argv[2]);
 
 		_tprintf(_T("Lanes = %d\n"), data.game->rows);
-
-		/*for (int i = 0; i < data.game->nCars; i++) {
-			data.game->cars[i].speed = _ttoi(argv[2]);
-			_tprintf(_T("Speed of car number %d = %d\n"), i+1, data.game->cars[i].speed);
-		}*/
 
 		_tprintf(TEXT("Speed of cars = %d"), data.game->carSpeed);
 	}
@@ -381,14 +373,7 @@ int _tmain(int argc, TCHAR** argv) {
 		_tprintf(_T("\nLanes = %d\n"), data.game->rows);
 
 		_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
-
-		/*for (int i = 0; i < data.game->nCars; i++) {
-			data.game->cars[i].speed = _ttoi(argv[2]);
-			_tprintf(_T("Speed of car number %d = %d\n"), i + 1, data.game->cars[i].speed);
-		}*/
 	}
-
-
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
@@ -396,11 +381,15 @@ int _tmain(int argc, TCHAR** argv) {
 		return 0;
 	}
 
-
-	RegCloseKey(reg.key);
+	hSendGameDataThread = CreateThread(NULL, 0, sendGameData, &data, 0, NULL);
+	if (hSendGameDataThread == NULL) {
+		_tprintf(_T("\nCan't create SENDGAMEDATATHREAD [%d]"), GetLastError());
+		return -1;
+	}
 
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
-	
+	WaitForSingleObject(hSendGameDataThread, INFINITE);
+	RegCloseKey(reg.key);
 	CloseHandle(hReceiveCmdThread);
 	
 	return 0;

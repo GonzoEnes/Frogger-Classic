@@ -2,8 +2,9 @@
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(160,21): warning C4018: '<': signed/unsigned mismatch
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(174,106): warning C4047: '!=': 'int' differs in levels of indirection from 'void *'
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(207,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(278,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(279,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(196): warning C4716: 'insertFrog': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(294,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(295,103): warning C4020: 'RegSetValueExW': too many actual parameters
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(219): warning C4715: 'changeDirection': not all control paths return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(196): warning C4716: 'insertFrog': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(274): warning C4716: 'sendGameData': must return a value
   Server.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
