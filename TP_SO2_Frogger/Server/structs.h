@@ -2,7 +2,6 @@
 #ifndef STRUCTS
 #include <windows.h>
 #include "defines.h"
-#include "game.h"
 
 typedef struct FROG_STRUCT Frog, * pFrog;
 typedef struct COMMAND Command, * pCommand;
@@ -20,16 +19,17 @@ struct REGISTRYCONFIG {
 };
 
 struct GAME {
+    DWORD rows; // aka lanes
 	TCHAR board[10][20];
-    DWORD rows;
 	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
 	DWORD nCars;
+	BOOL direction;
 	BOOL isMoving;
 	DWORD nFrogs;
 	pFrog frogs;
 	DWORD carSpeed; // ver com o prof
 	DWORD suspended;
-	DWORD time;
+	DWORD time; // o tempo de jogo
 	DWORD points;
 	BOOL isShutdown;
 	BOOL isSuspended;
@@ -51,7 +51,7 @@ struct DATA {
 	HANDLE hWriteSem; // write semaphore
 	HANDLE mutexCmd; // locks cmds
 	HANDLE hReadSem; // read semaphore
-	DWORD time;
+	DWORD time; // tempo que o sv está a correr
 	HANDLE hCmdEvent;
 	Game game[2]; // game 1 for singleplayer and game2 for multiplayer
 	//Frog frog;
@@ -70,9 +70,5 @@ struct FROG_STRUCT {
 struct SHAREDMEMGAME {
 	Game game[2];
 };
-
-
-
-
 
 #endif

@@ -129,52 +129,14 @@ BOOL createSharedMemoryAndInit(pData p) {
 	return TRUE;
 }
 
-DWORD WINAPI decreaseTime(LPVOID params) {
-	pData data = (pData)params;
+void initBoard(pData data) {
 
-	while (!data->game->isShutdown) {
-		if (!data->game->isSuspended && data->time > 0) {
-			data->time--;
-			Sleep(1000);
-		}
-		else {
-			// aqui voltar a meter os sapos na startLine
-			return 1;
+	for (DWORD i = 0; i < data->game[0].rows; i++) {
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			data->game[0].board[i][j] = _T('-'); // ver melhor
+			//_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), _T("-")); // perguntar ao prof
 		}
 	}
-	return 0;
-}
-
-DWORD stopCars(pData data, INT time) {
-	_tprintf(_T("\nStopping cars for %d seconds.\n"), time);
-
-	if (time < 0) {
-		return -1;
-	}
-
-	if (data->game->nCars == 0) {
-		return -2;
-	}
-
-	while (time > 0) {
-		data->game->isMoving = FALSE;
-		time--;
-		Sleep(1000);
-	}
-
-	return 1;
-}
-
-DWORD insertObstacle(pData data, INT row, INT column) {
-
-	TCHAR obstacle = _T('O'); // ver melhor
-
-	if (data->game->board[row][column] != NULL /*|| row > MAX_ROWS && column > MAX_COLUMNS ver isto melhor*/) { // something is there
-		return -1;
-	}
-	_tprintf(_T("\nInserting obstacle at position X: %d and Y: %d"), row, column); // tirar q isto é debug
-	data->game->board[row][column] = obstacle; // insert obstacle in 
-	return 1;
 }
 
 DWORD insertFrog(pData data) { // from shared memory give to operator
@@ -193,53 +155,196 @@ DWORD insertFrog(pData data) { // from shared memory give to operator
 	}
 }
 
+void insertCars(pData data) {
+
+	DWORD count = 0;
+	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
+	_tprintf(TEXT("\n%d"), data->game[0].nCars);
+	if (data->game[0].nCars == 0) {
+		_tprintf(TEXT("Imprimiu 0 carros :)"));
+		return -1;
+	}
+	while (data->game[0].nCars > count) { // insere carros até o número desejado ser alcançado
+		DWORD i = rand() % (data->game[0].rows - 2) + 1; // escolhe uma linha aleatória (exceto a primeira e a última)
+		DWORD j = rand() % data->game[0].columns; // escolhe uma coluna aleatória
+
+		if (data->game[0].board[i][j] != _T('c')) { // verifica se a posição está livre
+			DWORD carsInLine = 0;
+			for (DWORD k = 0; k < data->game[0].columns; k++) { // conta o número de carros na linha atual
+				if (data->game[0].board[i][k] == _T('c')) {
+					carsInLine++;
+				}
+			}
+			if (carsInLine < 8) { // verifica se ainda há espaço para mais carros na linha
+				data->game[0].board[i][j] = _T('c');
+				count++;
+			}
+			else {
+				i++;
+			}
+		}
+	}
+}
+
+DWORD stopCars(pData data, INT time) {
+	if (data->game[0].isMoving == FALSE) {
+		_tprintf(_T("\nCars are already stopped. Wait for a few seconds and try again.\n"));
+		return -2;
+	}
+
+	if (time < 0) {
+		_tprintf(_T("\nInsert a valid timeframe\n"));
+		return -1;
+	}
+
+	_tprintf(_T("\nStopping cars for %d seconds.\n"), time);
+
+	if (data->game[0].nCars == 0) {
+		_tprintf(_T("\nNo cars to stop.\n"));
+		return -2;
+	}
+
+	while (time > 0) {
+		data->game->isMoving = FALSE;
+		time--;
+		Sleep(1000);
+	}
+
+	//when time runs out
+	_tprintf(_T("\nTimer reached 0 seconds, back to moving cars.\n"));
+
+	data->game[0].isMoving = TRUE;
+
+	return 1;
+}
+
+DWORD insertObstacle(pData data, INT row, INT column) {
+
+	TCHAR obstacle = _T('O'); // ver melhor
+
+	if (row == 0 || row == data->game[0].rows-1) {
+		_tprintf(_T("\nCan't insert obstacle in starting/finish line.\n"));
+		return -2;
+	}
+
+	if (column > data->game[0].columns - 1 || row > data->game[0].rows - 1 || column < 0 || row < 0) {
+		_tprintf(_T("\nTrying to insert obstacle out of bounds.\n"));
+		return -3;
+	}
+
+	if (data->game->board[row][column] != _T('-')) { // something is there
+		_tprintf(_T("\nThere is an element at position (%d,%d)"), row, column);
+		
+		return -1;
+	}
+
+	_tprintf(_T("\nInserting obstacle at position X: %d and Y: %d"), row, column);
+	
+	data->game[0].board[row][column] = obstacle; // insert obstacle in 
+	
+	return 1;
+}
+
+
 BOOL moveCars(pData data) {
-	if(data->game[0].isMoving==TRUE){
-	for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
-		for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
-			if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
-				TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
-				data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
-				data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
-			}
+	if (data->game[0].isMoving == TRUE) {
+		if (data->game[0].direction == FALSE) { // move from RIGHT - LEFT
+			for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+				for (DWORD j = 0; j < data->game[0].columns - 1; j++) { // iterate columns
+					if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+						TCHAR prevElement = data->game[0].board[i][j + 1]; // store prev element before moving to the first spot of row
+						data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+						data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+					}
 
-			else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
-				data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
-			}
+					else if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+						data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
+					}
 
-			else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
-				TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
-				data->game[0].board[i][j + 1] = data->game[0].board[i][j];
-				data->game[0].board[i][j] = prevElement;
+					else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+						TCHAR prevElement = data->game[0].board[i][j + 1]; // otherwise move normally 
+						data->game[0].board[i][j - 1] = data->game[0].board[i][j];
+						data->game[0].board[i][j] = prevElement;
+					}
+				}
+			}
+		}
+		else { // if the way they are moving is LEFT RIGHT (ou seja, TRUE)
+			for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+				for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+					if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+						TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
+						data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+						data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+					}
+
+					else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+						data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
+					}
+
+					else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+						TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
+						data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+						data->game[0].board[i][j] = prevElement;
+					}
 				}
 			}
 		}
 	}
-	else { return FALSE; }
-
+	else {
+		return FALSE;
+	}
 }
 
 
 DWORD changeDirection(pData data) {
-	data->game->nCars = 1; // debug tirar depois obv
-	if (data->game->nCars == 0) {
+	if (data->game[0].nCars == 0) {
+		_tprintf(_T("\nNo cars to change direction!\n"));
 		return -1;
 	}
 
-	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game->nCars);
+	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game[0].nCars);
 
-	for (int i = 0; i < data->game->nCars; i++) {/* 
-		switch (data->game->cars[i].direction) {
+	/*switch (data->game[0].direction) {
 		case TRUE: // andar para a direita
-			data->game->cars[i].direction = FALSE; // andar para a esquerda
+			data->game[0].direction = FALSE; // andar para a esquerda
 			_tprintf(_T("\nDirections changed from LEFT - RIGHT to RIGHT - LEFT\n"));
 		case FALSE:
-			data->game->cars[i].direction = TRUE; // andar para a direita
+			data->game[0].direction = TRUE; // andar para a direita
 			_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
 		default:
 			return -2;
-		}*/
+	}*/
+
+	if (data->game[0].direction == FALSE) {
+		data->game[0].direction = TRUE; // andar para a direita
+		_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
+		return 1;
 	}
+
+	data->game[0].direction = FALSE;
+	_tprintf(_T("\nDirections changed from LEFT - RIGHT to RIGHT - LEFT\n"));
+	return 1;
+}
+
+DWORD WINAPI decreaseTime(LPVOID params) {
+	pData data = (pData)params;
+
+	while (!data->game[0].isShutdown && !data->game[0].isSuspended) {
+		if (!data->game->isSuspended && data->time > 0) {
+			data->time--; // depois ver como fazer com a velocidade dos carros
+			moveCars(data);
+			Sleep(1000);
+			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
+		}
+		else if (data->time == 0) {
+			// aqui voltar a meter os sapos na startLine
+			_tprintf(_T("\nPerdeu! O tempo expirou!\n"));
+			data->game[0].isShutdown = TRUE;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
@@ -250,7 +355,7 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	int i = 0;
 
 	do {
-		if (data->game->isSuspended == FALSE) {
+		if (data->game[0].isSuspended == FALSE) {
 			WaitForSingleObject(data->hCmdEvent, INFINITE);
 			WaitForSingleObject(data->mutexCmd, INFINITE);
 
@@ -266,6 +371,9 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 			ReleaseMutex(data->mutexCmd);
 
 			if (command.cmd == 1) {
+				/*if (WaitForSingleObject(data->hCmdEvent, INFINITE) == WAIT_OBJECT_0) {
+					_tprintf(_T("\nCars are already stopped. Please wait for %d seconds.\n"), command.parameter - (data->time - data->game[0].time));
+				}*/
 				stopCars(data, command.parameter); // received 1 from operator
 			}
 			if (command.cmd == 2) {
@@ -275,8 +383,7 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 				changeDirection(data);
 			}
 		}
-	} while (data->game->isShutdown != TRUE);
-
+	} while (data->game[0].isShutdown != TRUE);
 
 	return 0;
 }
@@ -290,6 +397,8 @@ DWORD WINAPI sendGameData(LPVOID params) {
 
 		// check for multiplayer na prox meta, para já copiar apenas os dados
 
+		data->game[0].time = data->time;
+
 		CopyMemory(&data->sharedMemGame->game[0], &data->game[0], sizeof(Game)); // copia para dentro da shmMem para depois o op ler
 
 		ReleaseMutex(data->hMutex);
@@ -301,7 +410,6 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 	//check if it can open reg key
 
 	DWORD size = SIZE_DWORD;
-	//TCHAR key_path[MAX] = _T("SOFTWARE\\TP_SO2\\Values");
 
 	_tcscpy_s(reg->keyPath, BUFFER, _T("SOFTWARE\\TP_SO2"));
 
@@ -322,6 +430,7 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 				_tprintf(_T("\nCan't set values for Frogger.\n"));
 				return FALSE;
 			}
+
 		}
 		else {
 			_tprintf(TEXT("\nCouldn't create key in SOFTWARE\\TP_SO2.\n"));
@@ -344,33 +453,47 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 	return TRUE;
 }
 
+void startgame(pData data) {
+	data->game[0].isShutdown = FALSE;
+	//data->game[1].isShutdown = FALSE;
+	data->game[0].isSuspended = FALSE;
+	//data->game[1].isSuspended = FALSE;
+	data->time = 100;
+	data->game[0].isMoving = TRUE;
+	data->game[0].columns = (DWORD)20;
+	data->game[0].direction = TRUE;
+	//data->game[1].columns = (DWORD)20;
+	data->game[0].nFrogs = 0;
+
+	initBoard(data);
+	insertFrog(data);
+	insertCars(data);
+
+}
+
 int _tmain(int argc, TCHAR** argv) {
 
 	// aqui são as vars
 	HANDLE hReceiveCmdThread;
 	HANDLE hSendGameDataThread;
+	HANDLE hDecreaseTimerThread;
 	Game game[2] = { 0 };
 	RegConfig reg = {0};
 	Data data;
-
 	data.game[0] = game[0];
 	data.game[1] = game[1];
- 
-
-	data.game[0].isShutdown = FALSE;
-	data.game[1].isShutdown = FALSE;
-
-	data.game[0].isSuspended = FALSE;
-	data.game[1].isSuspended = FALSE;
-	
-
-	data.game->nCars = 8;
+	data.game->frogs = malloc(sizeof(Frog));
 
 #ifdef UNICODE
 	(void)_setmode(_fileno(stdin), _O_WTEXT);
 	(void)_setmode(_fileno(stdout), _O_WTEXT);
 	(void)_setmode(_fileno(stderr), _O_WTEXT);
 #endif
+	
+	if (data.game->frogs == NULL) {
+		_tprintf(_T("\nCouldn't allocate space for frogs.\n"));
+		return 0;
+	}
 
 	if (!createSharedMemoryAndInit(&data)) {
 		_tprintf(_T("\nCan't create shared memory.\n"));
@@ -398,6 +521,14 @@ int _tmain(int argc, TCHAR** argv) {
 		_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
 	}
 
+	startgame(&data);
+
+	hDecreaseTimerThread = CreateThread(NULL, 0, decreaseTime, &data, 0, NULL);
+	if (hDecreaseTimerThread == NULL) {
+		_tprintf(_T("\nCan't create DECREASETIMERTHREAD [%d]"), GetLastError());
+		return -10;
+	}
+
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
 		_tprintf(_T("\nCan't create RECEIVECMDTHREAD [%d]"), GetLastError());
@@ -412,6 +543,7 @@ int _tmain(int argc, TCHAR** argv) {
 
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
 	WaitForSingleObject(hSendGameDataThread, INFINITE);
+	WaitForSingleObject(hDecreaseTimerThread, INFINITE);
 	RegCloseKey(reg.key);
 	CloseHandle(hReceiveCmdThread);
 	
