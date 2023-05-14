@@ -152,7 +152,7 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 			ReleaseMutex(data->mutexCmd); // unlock access
 			SetEvent(data->hCmdEvent); // flag event as set 
 			ResetEvent(data->hCmdEvent); // unflag
-			//gonzo mata te
+			
 		}
 
 		else if (_tcscmp(token, _T("insert")) == 0) {
@@ -313,32 +313,41 @@ DWORD WINAPI showBoardConstant(LPVOID params) {
 		Sleep(2000);
 		screenClear();
 		showBoard(data);
+	
 	}
 
 	return 0;
 }
 
-VOID moveCars(pData data) {
-	for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
-		for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
-			if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
-				TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
-				data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
-				data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
-			}
+BOOL moveCars(pData data) {
+	if (data->game[0].isMoving) {
+		for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+			for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+				if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+					TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
+					data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+					data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+				}
 
-			else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
-				data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
-			}
+				else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+					data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
+				}
 
-			else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
-				TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
-				data->game[0].board[i][j + 1] = data->game[0].board[i][j];
-				data->game[0].board[i][j] = prevElement;
+				else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+					TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
+					data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+					data->game[0].board[i][j] = prevElement;
+				}
 			}
 		}
 	}
+	else
+	{
+		data->game[0].isMoving = FALSE; //provavelmente alterar porque nao sei se o raciocionio bem feito
+	}
 }
+
+
 
 int _tmain(TCHAR** argv, int argc) {
 	srand(time(NULL));
@@ -351,8 +360,9 @@ int _tmain(TCHAR** argv, int argc) {
 	data.game[1] = game[1];
 	data.game->frogs = malloc(sizeof(Frog));
 	data.game[0].nFrogs = 0;
+	data.game[0].isMoving = FALSE;
 
-	data.game->cars = malloc(8 * sizeof(Car)); // debug tirar depois
+	
 
 	data.game[0].rows = (DWORD)10; // tirar estas linhas, é só debug para construir o board
 	data.game[0].columns = (DWORD)20;
@@ -392,6 +402,10 @@ int _tmain(TCHAR** argv, int argc) {
 	showBoard(&data);
 	moveCars(&data);
 	showBoard(&data);
+	data.game[0].isMoving = TRUE;
+	moveCars(&data);
+	showBoard(&data);
+
 
 	cmdThread = CreateThread(NULL, 0, sendCmdThread, &data, 0, NULL);
 	if (cmdThread == NULL) {

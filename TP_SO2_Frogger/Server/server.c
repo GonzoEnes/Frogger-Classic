@@ -157,9 +157,7 @@ DWORD stopCars(pData data, INT time) {
 	}
 
 	while (time > 0) {
-		for (int i = 0; i < data->game->nCars; i++) {
-			data->game->cars[i].isStopped = TRUE; // stop all cars within timeframe
-		}
+		data->game->isMoving = FALSE;
 		time--;
 		Sleep(1000);
 	}
@@ -195,6 +193,32 @@ DWORD insertFrog(pData data) { // from shared memory give to operator
 	}
 }
 
+BOOL moveCars(pData data) {
+	if(data->game[0].isMoving==TRUE){
+	for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+		for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+			if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+				TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
+				data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+				data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+			}
+
+			else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+				data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
+			}
+
+			else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+				TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
+				data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+				data->game[0].board[i][j] = prevElement;
+				}
+			}
+		}
+	}
+	else { return FALSE; }
+
+}
+
 
 DWORD changeDirection(pData data) {
 	data->game->nCars = 1; // debug tirar depois obv
@@ -204,7 +228,7 @@ DWORD changeDirection(pData data) {
 
 	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game->nCars);
 
-	for (int i = 0; i < data->game->nCars; i++) {
+	for (int i = 0; i < data->game->nCars; i++) {/* 
 		switch (data->game->cars[i].direction) {
 		case TRUE: // andar para a direita
 			data->game->cars[i].direction = FALSE; // andar para a esquerda
@@ -214,7 +238,7 @@ DWORD changeDirection(pData data) {
 			_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
 		default:
 			return -2;
-		}
+		}*/
 	}
 }
 
@@ -331,8 +355,7 @@ int _tmain(int argc, TCHAR** argv) {
 
 	data.game[0] = game[0];
 	data.game[1] = game[1];
-
-	data.game->cars = malloc(8 * sizeof(Car)); // debug tirar depois
+ 
 
 	data.game[0].isShutdown = FALSE;
 	data.game[1].isShutdown = FALSE;

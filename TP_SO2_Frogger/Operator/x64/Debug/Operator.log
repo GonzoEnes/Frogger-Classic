@@ -1,6 +1,8 @@
 ﻿  operator.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(282,12): warning C4098: 'insertCars': 'void' function returning a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(344,12): warning C4013: 'time' undefined; assuming extern returning int
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(239): warning C4716: 'receiveGameData': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(273): warning C4716: 'insertFrog': must return a value
-  Operator.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(282,12): warning C4098: 'insertCars': 'void' function returning a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(353,8): warning C4013: 'time' undefined; assuming extern returning int
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(356,9): warning C4101: 'hPermaShowBoard': unreferenced local variable
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(239): warning C4716: 'receiveGameData': must return a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(273): warning C4716: 'insertFrog': must return a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(348): warning C4716: 'moveCars': must return a value
+  Operator.vcxproj -> C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe

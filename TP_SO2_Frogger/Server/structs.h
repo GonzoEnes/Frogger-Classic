@@ -5,7 +5,6 @@
 #include "game.h"
 
 typedef struct FROG_STRUCT Frog, * pFrog;
-typedef struct CAR_STRUCT Car, * pCars;
 typedef struct COMMAND Command, * pCommand;
 typedef struct SHAREDMEMCOMMAND ShmCommand, * pShmCommand;
 typedef struct SHAREDMEMGAME ShmGame, * pShmGame;
@@ -25,10 +24,10 @@ struct GAME {
     DWORD rows;
 	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
 	DWORD nCars;
+	BOOL isMoving;
 	DWORD nFrogs;
 	pFrog frogs;
 	DWORD carSpeed; // ver com o prof
-	pCars cars;
 	DWORD suspended;
 	DWORD time;
 	DWORD points;
@@ -73,11 +72,7 @@ struct SHAREDMEMGAME {
 };
 
 
-struct CAR_STRUCT {
-	int speed, nCar;
-	BOOL isStopped;
-	BOOL direction; // bool false para a esquerda, true para a direita só para orientar +-
-};
+
 
 
 #endif
