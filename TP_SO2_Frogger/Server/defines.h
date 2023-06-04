@@ -11,4 +11,6 @@
 #define BUFFER 256
 #define SIZE_DWORD 256*sizeof(DWORD)
 #define BUFFERSIZE 10
+#define NUM 2
+#define PIPE_NAME _T("\\\\.\\pipe\\FroggerGame")
 #endif // !NAMES

@@ -4,40 +4,96 @@
 #include <fcntl.h>
 #include <io.h>
 #include <windows.h>
+#include "../Server/structs.h"
+#include "../Server/defines.h"
 
 
-
-
-
-
-void showBoard(ControlData* data) {
-	WaitForSingleObject(data->hMutex, INFINITE);
-	if (data->game[0].gameType == 1) {
-		_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
-		for (DWORD i = 0; i < data->game[0].rows; i++)
-		{
-			_tprintf(TEXT("\n"));
-			for (DWORD j = 0; j < data->game[0].columns; j++)
-				_tprintf(TEXT("%c "), data->game[0].board[i][j]);
-		}
-		_tprintf(TEXT("\n\n"));
-	}
-	else {
-		for (int i = 0; i < 2; i++) {
-			_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[i].time);
-			for (DWORD j = 0; j < data->game[i].rows; j++)
-			{
-				_tprintf(TEXT("\n"));
-				for (DWORD k = 0; k < data->game[i].columns; k++)
-					_tprintf(TEXT("%c "), data->game[i].board[j][k]);
-			}
-			_tprintf(TEXT("\n\n"));
+void showGame(pGame game) {
+	for (DWORD i = 0; i < game->rows; i++) {
+		_tprintf(_T("\n"));
+		for (DWORD j = 0; j < game->columns; j++) {
+			_tprintf(_T("%c "), game->board[i][j]);
 		}
 	}
-	ReleaseMutex(data->hMutex);
+
+	_tprintf(_T("\n\n"));
 }
 
+void playFrogger(pGame game, HANDLE hPipeComms) {
+	BOOL ret;
+	DWORD nBytes;
+
+	while (!game->isShutdown) {
+		ret = ReadFile(hPipeComms, game, sizeof(Game), &nBytes, NULL);
+		game->isSuspended = FALSE;
+		showGame(game);
+
+		if (!ret || nBytes == 0) { // if ReadFile failed or read 0 bytes, then:
+			_tprintf(_T("\n[ERROR] Frogger game shutting down...\n"));
+			game->isShutdown = TRUE;
+			return;
+		}
+
+		_tprintf(_T("\nData read successfully. Starting game...\n"));
+
+		/*do {
+			
+		} while ();*/
+
+		if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
+			_tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
+		}
+
+		else {
+			_tprintf(_T("\nData successfully sent to server...\n"));
+		}
+	}
+}
+
+
 int _tmain(int argc, TCHAR** argv) {
-	_tprintf(_T("\nHi from frog.\n"));
+	Game game;
+	HANDLE hPipeComms;
+
+	game.isShutdown = FALSE;
+	game.isSuspended = FALSE;
+
+	TCHAR opt[BUFFER];
+	
+
+#ifdef UNICODE
+	(void)_setmode(_fileno(stdin), _O_WTEXT);
+	(void)_setmode(_fileno(stdout), _O_WTEXT);
+	(void)_setmode(_fileno(stderr), _O_WTEXT);
+#endif
+
+	_tprintf(_T("\n--------------FROG/CLIENT-------------\n"));
+
+	if (!WaitNamedPipe(PIPE_NAME, NMPWAIT_WAIT_FOREVER)) {
+		_tprintf(_T("\nCan't connect to named pipe. [%d]\n"), GetLastError());
+		return -1;
+	}
+
+	hPipeComms = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hPipeComms == NULL) {
+		_tprintf(_T("\nCan't connect to named pipe. [%d]\n"), GetLastError());
+		return -2;
+	}
+
+	while (!game.isShutdown) {
+		if (!game.isSuspended) {
+			playFrogger(&game, hPipeComms);
+		}
+
+		else {
+			_tprintf("\nTo unpause the game, press any key...");
+			_fgetts(opt, sizeof(opt), stdin);
+			game.isSuspended = FALSE;
+		}
+	}
+
+	CloseHandle(hPipeComms);
+
 	return 0;
 }

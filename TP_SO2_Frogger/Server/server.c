@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <windows.h>
+#include <time.h>
 #include "structs.h"
 
 BOOL createSharedMemoryAndInit(pData p) {
@@ -159,7 +160,7 @@ void insertCars(pData data) {
 
 	DWORD count = 0;
 	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
-	_tprintf(TEXT("\n%d"), data->game[0].nCars);
+	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
 	if (data->game[0].nCars == 0) {
 		_tprintf(TEXT("Imprimiu 0 carros :)"));
 		return -1;
@@ -247,6 +248,25 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 
 
 BOOL moveCars(pData data) {
+
+	
+	/*if (data->game[0].isMoving == TRUE) {
+		if (data->game[0].direction == TRUE) { // RIGHT - LEFT
+			for (DWORD i = 0; i < data->game[0].rows - 1; i++) {
+				for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
+					if (data->game[0].board[i][j] == _T('c')) { // ver obstaculos depois
+						TCHAR prevElement = data->game[0].board[i][j + 1]; // store prev element before moving to the first spot of row
+						data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
+						data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+					}
+				}
+			}
+		}
+	}
+	else {
+		return FALSE;
+	}*/
+	
 	if (data->game[0].isMoving == TRUE) {
 		if (data->game[0].direction == FALSE) { // move from RIGHT - LEFT
 			for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
@@ -270,19 +290,28 @@ BOOL moveCars(pData data) {
 			}
 		}
 		else { // if the way they are moving is LEFT RIGHT (ou seja, TRUE)
+			BOOL firstTime = FALSE;
 			for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
-				for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+				for (DWORD j = data->game[0].columns; j > 0; j--) { // iterate columns
+					if (data->game[0].board[i][1] == _T('c')) {
+						if (!firstTime) {
+							data->game[0].board[i][0] = data->game[0].board[i][1];
+							data->game[0].board[i][0] = _T('-');
+							firstTime = TRUE;
+						}
+					}
 					if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
 						TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
-						data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
 						data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
 					}
 
-					else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
-						data->game[0].board[i][j + 1] = data->game[0].board[i][j]; // give next element its own value (move 'c' to right)
-					}
+					/*else if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at first element of row and its a car
+						data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+						data->game[0].board[i][j] = _T('-');// give next element its own value (move 'c' to right)
+						_tprintf(_T("\nCarro na faixa: %d"), i);
+					}*/
 
-					else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+					if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
 						TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally 
 						data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 						data->game[0].board[i][j] = prevElement;
@@ -293,7 +322,7 @@ BOOL moveCars(pData data) {
 	}
 	else {
 		return FALSE;
-	}
+	} 
 }
 
 
@@ -483,6 +512,7 @@ int _tmain(int argc, TCHAR** argv) {
 	data.game[0] = game[0];
 	data.game[1] = game[1];
 	data.game->frogs = malloc(sizeof(Frog));
+	srand(time(NULL));
 
 #ifdef UNICODE
 	(void)_setmode(_fileno(stdin), _O_WTEXT);

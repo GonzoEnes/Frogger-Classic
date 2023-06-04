@@ -1,10 +1,11 @@
 ﻿  server.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(165,12): warning C4098: 'insertCars': 'void' function returning a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(230,13): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(230,48): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(426,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(427,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(156): warning C4716: 'insertFrog': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(407): warning C4716: 'sendGameData': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(297): warning C4715: 'moveCars': not all control paths return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(166,12): warning C4098: 'insertCars': 'void' function returning a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(231,13): warning C4018: '>': signed/unsigned mismatch
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(231,48): warning C4018: '>': signed/unsigned mismatch
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(456,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(457,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(516,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(157): warning C4716: 'insertFrog': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(437): warning C4716: 'sendGameData': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(327): warning C4715: 'moveCars': not all control paths return a value
   Server.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
