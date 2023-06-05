@@ -62,8 +62,8 @@ struct SHAREDMEMCOMMAND {
 };
 
 struct FROG_STRUCT {
-	DWORD nLives, nFroggs;
-	DWORD pos;
+	DWORD nLives;
+	DWORD x, y;
 	BOOL isDead;
 	//status
 };

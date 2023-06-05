@@ -500,12 +500,22 @@ void startgame(pData data) {
 
 }
 
+DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
+	
+}
+
+DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
+
+}
+
 int _tmain(int argc, TCHAR** argv) {
 
 	// aqui são as vars
 	HANDLE hReceiveCmdThread;
 	HANDLE hSendGameDataThread;
 	HANDLE hDecreaseTimerThread;
+	HANDLE hSinglePlayerThread;
+	HANDLE hMultiPlayerThread;
 	Game game[2] = { 0 };
 	RegConfig reg = {0};
 	Data data;
@@ -571,11 +581,33 @@ int _tmain(int argc, TCHAR** argv) {
 		return -1;
 	}
 
+	hSinglePlayerThread = CreateThread(NULL, 0, threadFroggerSinglePlayer, &data, 0, NULL);
+
+	if (hSinglePlayerThread == NULL) {
+		_tprintf(_T("\nCan't create SINGLEPLAYERTHREAD [%d]"), GetLastError());
+		return -2;
+	}
+
+	if (data.game[0].gameType == 2) { // if it's multiplayer
+		_tprintf(_T("\nCan't create MULTIPLAYERTHREAD.\n [%d]"), GetLastError());
+		return -3;
+	}
+
+
+
+
+
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
 	WaitForSingleObject(hSendGameDataThread, INFINITE);
 	WaitForSingleObject(hDecreaseTimerThread, INFINITE);
+	WaitForSingleObject(hSinglePlayerThread, INFINITE);
+	WaitForSingleObject(hMultiPlayerThread, INFINITE);
 	RegCloseKey(reg.key);
 	CloseHandle(hReceiveCmdThread);
+	CloseHandle(hDecreaseTimerThread);
+	CloseHandle(hSendGameDataThread);
+	CloseHandle(hSinglePlayerThread);
+	CloseHandle(hMultiPlayerThread);
 	
 	return 0;
 }
