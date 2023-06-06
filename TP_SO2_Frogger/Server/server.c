@@ -584,6 +584,43 @@ BOOLEAN checkFrogCollisionTop(pData data) {
 
 BOOLEAN checkFrogCollisionSide(pData data) {
 	//check for how it's moving (LEFT _ RIGHT / RIGHT _ LEFT)
+	if (!data->game[0].direction) {
+		for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
+			for (DWORD j = 0; j < data->game[0].columns; j++) {
+				if (data->game[0].direction == FALSE) { // RIGHT - LEFT
+					if (data->game[0].board[i][j] == _T('s')) {
+						if (data->game[0].board[i][j+1] == _T('c') || data->game[0].board[i][j+1] == _T('O')) {
+							_tprintf(_T("\nMatei o sapo pelo lado @ [%d, %d]"), i, j);
+							data->game[0].board[i][j] = _T('M'); // Marcar a posição onde o sapo morreu
+							return TRUE;
+						}
+					}
+				}
+
+			}
+		}
+	}
+	else {
+		for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
+			for (DWORD j = data->game[0].columns; j > 0; j--) {
+				if (data->game[0].direction == FALSE) { // RIGHT - LEFT
+					if (data->game[0].board[i][j] == _T('s')) {
+						if (data->game[0].board[i][j - 1] == _T('c') || data->game[0].board[i][j - 1] == _T('O')) {
+							_tprintf(_T("\nMatei o sapo pelo lado @ [%d, %d]"), i, j);
+							data->game[0].board[i][j] = _T('M'); // Marcar a posição onde o sapo morreu
+							return TRUE;
+						}
+					}
+				}
+
+			}
+		}
+	}
+
+	
+
+	
+	return FALSE;
 }
 
 DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
@@ -758,4 +795,3 @@ int _tmain(int argc, TCHAR** argv) {
 	
 	return 0;
 }
-
