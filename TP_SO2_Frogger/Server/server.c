@@ -1,4 +1,4 @@
-#include <tchar.h>
+Ôªø#include <tchar.h>
 //#include <math.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -143,49 +143,62 @@ void initBoard(pData data) {
 DWORD insertFrog(pData data) { // from shared memory give to operator
 	DWORD aux;
 
-	for (DWORD i = 0; i < data->game[0].rows; i++) {
-		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) { //&& strcmp(data->game[0].board[i][j],_T("-")==0)) {
+	for (DWORD i = 0; i < data->game[0].rows; i++) { //mudar depois
+		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
+			//data->game[0].frogs->symbol = _T('s');
+
+			if (data->game[0].board[i][j] == _T('-')) {
+				data->game[0].board[2][data->game[0].columns - 2] = _T('s');
+				data->game[0].nFrogs++;
+			}
+			
+			/*if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
 				while (data->game[0].nFrogs < 2) {
 					aux = rand() % data->game->columns;
-					data->game[0].board[i][aux] = _T('s');
+					data->game[0].frogs->symbol = _T('s');
+					data->game[0].board[i][aux] = data->game[0].frogs->symbol;
+					data->game[0].frogs->y = i;
+					data->game[0].frogs->x = aux;
 					data->game[0].nFrogs++;
 				}
-			}
+			}*/
 		}
 	}
 }
 
 void insertCars(pData data) {
-
 	DWORD count = 0;
+	
 	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
 	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
-	if (data->game[0].nCars == 0) {
-		_tprintf(TEXT("Imprimiu 0 carros :)"));
-		return -1;
-	}
-	while (data->game[0].nCars > count) { // insere carros atÈ o n˙mero desejado ser alcanÁado
-		DWORD i = rand() % (data->game[0].rows - 2) + 1; // escolhe uma linha aleatÛria (exceto a primeira e a ˙ltima)
-		DWORD j = rand() % data->game[0].columns; // escolhe uma coluna aleatÛria
 
-		if (data->game[0].board[i][j] != _T('c')) { // verifica se a posiÁ„o est· livre
+	if (data->game[0].nCars == 0) {
+		_tprintf(TEXT("\nImprimiu 0 carros :)\n"));
+		return;
+	}
+
+	while (data->game[0].nCars != count) { // insere carros at√© o n√∫mero desejado ser alcan√ßado
+		DWORD i = rand() % (data->game[0].rows - 2) + 1; // escolhe uma linha aleat√≥ria (exceto a primeira e a √∫ltima)
+		DWORD j = rand() % data->game[0].columns; // escolhe uma coluna aleat√≥ria
+
+		if (data->game[0].board[i][j] != _T('c') && data->game[0].board[i][j] != _T('s')) { // verifica se a posi√ß√£o est√° livre
+			
 			DWORD carsInLine = 0;
-			for (DWORD k = 0; k < data->game[0].columns; k++) { // conta o n˙mero de carros na linha atual
+
+			for (DWORD k = 0; k < data->game[0].columns; k++) { // conta o n√∫mero de carros na linha atual
 				if (data->game[0].board[i][k] == _T('c')) {
 					carsInLine++;
 				}
 			}
-			if (carsInLine < 8) { // verifica se ainda h· espaÁo para mais carros na linha
+
+			if (carsInLine < 8 && i != 0 && i != (data->game[0].rows - 1) && j != data->game[0].columns - 1 && j != 0 && data->game[0].board[i][j] != _T('s')) { // verifica se ainda h√° espa√ßo para mais carros na linha
 				data->game[0].board[i][j] = _T('c');
 				count++;
-			}
-			else {
-				i++;
 			}
 		}
 	}
 }
+
 
 DWORD stopCars(pData data, INT time) {
 	if (data->game[0].isMoving == FALSE) {
@@ -248,8 +261,6 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 
 
 BOOL moveCars(pData data) {
-
-	
 	/*if (data->game[0].isMoving == TRUE) {
 		if (data->game[0].direction == TRUE) { // RIGHT - LEFT
 			for (DWORD i = 0; i < data->game[0].rows - 1; i++) {
@@ -363,7 +374,7 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
 			moveCars(data);
-			Sleep(1000);
+			Sleep(4000);
 			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
 		}
 		else if (data->time == 0) {
@@ -424,14 +435,14 @@ DWORD WINAPI sendGameData(LPVOID params) {
 		WaitForSingleObject(data->hWriteSem, INFINITE);
 		WaitForSingleObject(data->hMutex, INFINITE);
 
-		// check for multiplayer na prox meta, para j· copiar apenas os dados
+		// check for multiplayer na prox meta, para j√° copiar apenas os dados
 
 		data->game[0].time = data->time;
 
 		CopyMemory(&data->sharedMemGame->game[0], &data->game[0], sizeof(Game)); // copia para dentro da shmMem para depois o op ler
 
 		ReleaseMutex(data->hMutex);
-		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui È o sem de escrita porque vai escrever para dentro do pointer da shmMem
+		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui √© o sem de escrita porque vai escrever para dentro do pointer da shmMem
 	}
 }
 
@@ -493,6 +504,7 @@ void startgame(pData data) {
 	data->game[0].direction = TRUE;
 	//data->game[1].columns = (DWORD)20;
 	data->game[0].nFrogs = 0;
+	data->game[0].frogs->nLives = 3;
 
 	initBoard(data);
 	insertFrog(data);
@@ -500,22 +512,95 @@ void startgame(pData data) {
 
 }
 
-DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
-	
+BOOLEAN checkFrogCollisionTop(pData data) {
+	for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
+		for (DWORD j = 0; j < data->game[0].columns; j++) {
+			if (data->game[0].board[i][j] == _T('s')) {
+				if (data->game[0].board[i-1][j] == _T('c') || data->game[0].board[i-1][j] == _T('O')) {
+					_tprintf(_T("\nMatei o sapo @ [%d, %d]"), i, j);
+					data->game[0].board[i][j] = _T('M'); // Marcar a posi√ß√£o onde o sapo morreu
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
 }
 
+BOOLEAN checkFrogCollisionSide(pData data) {
+	//check for how it's moving (LEFT _ RIGHT / RIGHT _ LEFT)
+}
+
+DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
+
+	pData data = (pData)params;
+	BOOL win = FALSE;
+	BOOL end = FALSE;
+	//BOOL begin = FALSE;
+
+	while (!end) { // enquanto o jogo n√£o acabou
+		if (!data->game[0].isSuspended) { // e n√£o est√° suspenso/ver do tempo
+			if (data->game[0].frogs->y == 0) {
+				data->game[0].frogs->score += 100; // quando chega √† meta ganha 100 pontos
+				win = TRUE;
+				end = TRUE;
+				Sleep(2000);
+				continue;
+			}
+
+			if (data->game[0].nFrogs == 0) {
+				_tprintf(_T("\n[NAO HA SAPOS].\n"));
+				end = TRUE;
+				continue;
+			}
+
+			if (checkFrogCollisionTop(data)) {
+				if (data->game[0].frogs->nLives != 0) {
+					_tprintf(_T("\nVidas: %d"), data->game[0].frogs->nLives);
+					data->game[0].frogs->nLives--; // lose 1 HP 
+					_tprintf(_T("\nVidas: %d"), data->game[0].frogs->nLives);
+					data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10];
+					Sleep(2000);
+					continue;
+				}
+				else {
+					end = TRUE;
+					continue;
+				}
+			}
+			else {
+				continue;
+			}
+
+			if (data->game[0].time == 0 && data->game[0].frogs->y != 0) { // se o tempo for 0 e n√£o chegou √† meta ent√£o
+				if (data->game[0].frogs->nLives != 0) {
+					data->game[0].frogs->nLives--;
+					data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
+					Sleep(2000);
+					continue;
+					// e n√£o end = TRUE;
+				}
+				end = TRUE;
+				continue;
+			}
+		}
+	}
+}
+
+
 DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
+	pData data = (pData)params;
+
 
 }
 
 int _tmain(int argc, TCHAR** argv) {
-
-	// aqui s„o as vars
+	// aqui s√£o as vars
 	HANDLE hReceiveCmdThread;
 	HANDLE hSendGameDataThread;
 	HANDLE hDecreaseTimerThread;
 	HANDLE hSinglePlayerThread;
-	HANDLE hMultiPlayerThread;
+	//HANDLE hMultiPlayerThread;
 	Game game[2] = { 0 };
 	RegConfig reg = {0};
 	Data data;
@@ -588,26 +673,23 @@ int _tmain(int argc, TCHAR** argv) {
 		return -2;
 	}
 
-	if (data.game[0].gameType == 2) { // if it's multiplayer
+	/*if (data.game[0].gameType == 2) { // if it's multiplayer
 		_tprintf(_T("\nCan't create MULTIPLAYERTHREAD.\n [%d]"), GetLastError());
 		return -3;
-	}
-
-
-
-
+	}*/
 
 	WaitForSingleObject(hReceiveCmdThread, INFINITE);
 	WaitForSingleObject(hSendGameDataThread, INFINITE);
 	WaitForSingleObject(hDecreaseTimerThread, INFINITE);
 	WaitForSingleObject(hSinglePlayerThread, INFINITE);
-	WaitForSingleObject(hMultiPlayerThread, INFINITE);
+	//WaitForSingleObject(hMultiPlayerThread, INFINITE);
 	RegCloseKey(reg.key);
 	CloseHandle(hReceiveCmdThread);
 	CloseHandle(hDecreaseTimerThread);
 	CloseHandle(hSendGameDataThread);
 	CloseHandle(hSinglePlayerThread);
-	CloseHandle(hMultiPlayerThread);
+	//CloseHandle(hMultiPlayerThread);
 	
 	return 0;
 }
+

@@ -255,7 +255,7 @@ DWORD WINAPI showBoardConstant(LPVOID params) {
 	pData data = (pData)params;
 
 	while (1) {
-		Sleep(1000);
+		Sleep(4000);
 		screenClear();
 		_tprintf(_T("\nA printar board...\n"));
 		showBoard(data);
