@@ -446,7 +446,7 @@ DWORD WINAPI sendGameData(LPVOID params) {
 	}
 }
 
-BOOL readRegConfigs(pData data, pRegConfig reg) {
+BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 	//check if it can open reg key
 
 	DWORD size = SIZE_DWORD;
@@ -459,6 +459,36 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 		if (RegCreateKeyEx(HKEY_CURRENT_USER, reg->keyPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &reg->key, &reg->dposition) == ERROR_SUCCESS) {
 			_tprintf(_T("\nKey created successfully.\n"));
 			// atribuir os valores para dentro da struct
+
+			if (argc == 3) // cria a chave do reg com os valores da linha de comandos. 
+			{
+				DWORD lanes = _ttoi(argv[1]);
+				DWORD speed = _ttoi(argv[2]);
+
+				DWORD setLanes = RegSetValueEx(reg->key, _T("Lanes"), 0, REG_DWORD, (LPBYTE)&lanes, sizeof(DWORD), &size);
+				DWORD setSpeed = RegSetValueEx(reg->key, _T("Speed"), 0, REG_DWORD, (LPBYTE)&speed, sizeof(DWORD), &size);
+
+				if (setLanes != ERROR_SUCCESS || setSpeed != ERROR_SUCCESS) {
+					_tprintf(_T("\nCan't set values for Frogger.\n"));
+					return FALSE;
+				}
+
+				DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
+				DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
+
+				if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
+					_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
+					return FALSE;
+				}
+
+				return TRUE;
+
+			}
+
+			// ele só entra aqui se os args forem 0, ou seja,
+			// se não houver args de linha de comand
+			// se ele não vir nenhum, ele vai ler do reg e, se lá estiver dentro alguma coisa
+			// então ele mete dentro das vars, senão ele vai meter os valores hardcoded
 
 			DWORD lanes = 10;
 			DWORD speed = 5; // change if necessary
@@ -482,8 +512,33 @@ BOOL readRegConfigs(pData data, pRegConfig reg) {
 
 	// check for gameType (solo/duo) later
 
+	if (argc == 3) { // if key is created and can open
+
+		DWORD lanes = _ttoi(argv[1]);
+		DWORD speed = _ttoi(argv[2]);
+
+
+		DWORD setLanes = RegSetValueEx(reg->key, _T("Lanes"), 0, REG_DWORD, (LPBYTE)&lanes, sizeof(DWORD), &size);
+		DWORD setSpeed = RegSetValueEx(reg->key, _T("Speed"), 0, REG_DWORD, (LPBYTE)&speed, sizeof(DWORD), &size);
+
+		if (setLanes != ERROR_SUCCESS || setSpeed != ERROR_SUCCESS) {
+			_tprintf(_T("\nCan't set values for Frogger.\n"));
+			return FALSE;
+		}
+
+		DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
+		DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
+
+		if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
+			_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
+			return FALSE;
+		}
+	}
+
 	DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
 	DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
+
+	_tprintf(_T("\nChave já criada com: %d %d"), data->game[0].rows, data->game[0].carSpeed);
 
 	if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
 		_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
@@ -625,7 +680,18 @@ int _tmain(int argc, TCHAR** argv) {
 		return 0;
 	}
 
-	if (argc == 3) {
+	if (!readRegConfigs(&data, &reg, argc, argv)) {
+		_tprintf(_T("\nError reading configs from registry.\n"));
+		return 0;
+	}
+
+	_tprintf(_T("\nValues set.\n"));
+
+	_tprintf(_T("\nLanes = %d\n"), data.game->rows);
+
+	_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
+
+	/*if (argc == 3) {
 		data.game->rows = _ttoi(argv[1]);
 		data.game->carSpeed = _ttoi(argv[2]);
 
@@ -634,7 +700,7 @@ int _tmain(int argc, TCHAR** argv) {
 		_tprintf(TEXT("Speed of cars = %d"), data.game->carSpeed);
 	}
 	else {
-		if (!readRegConfigs(&data, &reg)) {
+		if (!readRegConfigs(&data, &reg, argc, argv)) {
 			_tprintf(_T("\nError reading configs from registry.\n"));
 			return 0;
 		}
@@ -644,7 +710,7 @@ int _tmain(int argc, TCHAR** argv) {
 		_tprintf(_T("\nLanes = %d\n"), data.game->rows);
 
 		_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
-	}
+	}*/
 
 	startgame(&data);
 

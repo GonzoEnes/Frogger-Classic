@@ -1,14 +1,18 @@
 ﻿  server.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(144,8): warning C4101: 'aux': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,13): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,48): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(466,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(467,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(610,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(167): warning C4716: 'insertFrog': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(447): warning C4716: 'sendGameData': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(532): warning C4716: 'checkFrogCollisionSide': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(595): warning C4716: 'threadFroggerMultiPlayer': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(588): warning C4716: 'threadFroggerSinglePlayer': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(337): warning C4715: 'moveCars': not all control paths return a value
-  Server.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(144,8): warning C4101: 'aux': variável local não referenciada
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,13): warning C4018: '>': incompatibilidade de signed/unsigned
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,48): warning C4018: '>': incompatibilidade de signed/unsigned
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(468,104): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(469,104): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(496,103): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(497,103): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(521,102): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(522,102): warning C4020: 'RegSetValueExW': muitos parâmetros reais
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(665,8): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(167): warning C4716: 'insertFrog': deve retornar um valor
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(337): warning C4715: 'moveCars': nem todos os caminhos de controle retornam um valor
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(447): warning C4716: 'sendGameData': deve retornar um valor
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(587): warning C4716: 'checkFrogCollisionSide': deve retornar um valor
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(643): warning C4716: 'threadFroggerSinglePlayer': deve retornar um valor
+C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(650): warning C4716: 'threadFroggerMultiPlayer': deve retornar um valor
+  Server.vcxproj -> C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
