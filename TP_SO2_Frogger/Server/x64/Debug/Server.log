@@ -1,18 +1,17 @@
 ﻿  server.c
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(144,8): warning C4101: 'aux': variável local não referenciada
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,13): warning C4018: '>': incompatibilidade de signed/unsigned
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(244,48): warning C4018: '>': incompatibilidade de signed/unsigned
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(468,104): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(469,104): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(496,103): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(497,103): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(521,102): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(522,102): warning C4020: 'RegSetValueExW': muitos parâmetros reais
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(631,41): warning C4047: '==': 'TCHAR [20]' difere em níveis de indireção de 'int'
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(701,8): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(167): warning C4716: 'insertFrog': deve retornar um valor
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(337): warning C4715: 'moveCars': nem todos os caminhos de controle retornam um valor
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(447): warning C4716: 'sendGameData': deve retornar um valor
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(679): warning C4716: 'threadFroggerSinglePlayer': deve retornar um valor
-C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(686): warning C4716: 'threadFroggerMultiPlayer': deve retornar um valor
-  Server.vcxproj -> C:\Users\Utilizador\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(146,8): warning C4101: 'aux': unreferenced local variable
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(247,13): warning C4018: '>': signed/unsigned mismatch
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(247,48): warning C4018: '>': signed/unsigned mismatch
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(453,104): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(454,104): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(481,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(482,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(506,102): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(507,102): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(624,41): warning C4047: '==': 'TCHAR [20]' differs in levels of indirection from 'int'
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(697,8): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(170): warning C4716: 'insertFrog': must return a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(432): warning C4716: 'sendGameData': must return a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(682): warning C4716: 'threadFroggerMultiPlayer': must return a value
+C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\Server\server.c(675): warning C4716: 'threadFroggerSinglePlayer': must return a value
+  Server.vcxproj -> C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe
