@@ -191,7 +191,7 @@ void insertCars(pData data) {
 				}
 			}
 
-			if (carsInLine < 8 && i != 0 && i != (data->game[0].rows - 1) && j != data->game[0].columns - 1 && j != 0 && data->game[0].board[i][j] != _T('s')) { // verifica se ainda há espaço para mais carros na linha
+			if (carsInLine < 8 && j != 0 && data->game[0].board[i][j] != _T('s')) { // verifica se ainda há espaço para mais carros na linha
 				data->game[0].board[i][j] = _T('c');
 				count++;
 			}
@@ -616,10 +616,6 @@ BOOLEAN checkFrogCollisionSide(pData data) {
 			}
 		}
 	}
-
-	
-
-	
 	return FALSE;
 }
 
@@ -632,11 +628,11 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 
 	while (!end) { // enquanto o jogo não acabou
 		if (!data->game[0].isSuspended) { // e não está suspenso/ver do tempo
-			if (data->game[0].frogs->y == 0) {
+			if (data->game[0].board[0] == _T('s')) { // ver isto melhor depois (isto é a lógica do sapo estar na meta == ganha jogo)
 				data->game[0].frogs->score += 100; // quando chega à meta ganha 100 pontos
 				win = TRUE;
 				end = TRUE;
-				Sleep(2000);
+				Sleep(200);
 				continue;
 			}
 
@@ -646,29 +642,32 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				continue;
 			}
 
-			if (checkFrogCollisionTop(data)) {
-				if (data->game[0].frogs->nLives != 0) {
+			if (checkFrogCollisionTop(data) || checkFrogCollisionSide(data)) { // collision de lado não está a funcionar bem
+				if (data->game[0].frogs->nLives > 0) {
 					_tprintf(_T("\nVidas: %d"), data->game[0].frogs->nLives);
 					data->game[0].frogs->nLives--; // lose 1 HP 
 					_tprintf(_T("\nVidas: %d"), data->game[0].frogs->nLives);
-					data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10];
-					Sleep(2000);
+					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
+					Sleep(200);
 					continue;
 				}
 				else {
 					end = TRUE;
+					Sleep(200);
 					continue;
 				}
 			}
 			else {
+				Sleep(200);
 				continue;
 			}
 
 			if (data->game[0].time == 0 && data->game[0].frogs->y != 0) { // se o tempo for 0 e não chegou à meta então
 				if (data->game[0].frogs->nLives != 0) {
 					data->game[0].frogs->nLives--;
-					data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
-					Sleep(2000);
+					//data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
+					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
+					Sleep(200);
 					continue;
 					// e não end = TRUE;
 				}
