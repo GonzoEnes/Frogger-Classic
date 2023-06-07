@@ -24,6 +24,10 @@ struct GAME {
 	DWORD columns;// max columns = 20 (ver dps) e max rows = ir buscar ao reg
 	DWORD nCars;
 	BOOL direction;
+	DWORD frogX;
+	DWORD frogY;
+	DWORD playerScore;
+	DWORD frogLives;
 	BOOL isMoving;
 	DWORD nFrogs;
 	pFrog frogs;
@@ -59,14 +63,6 @@ struct DATA {
 
 struct SHAREDMEMCOMMAND {
 	Command operatorCmds[BUFFER]; // holds all shared mem for server -> operator
-};
-
-struct FROG_STRUCT {
-	DWORD nLives;
-	TCHAR symbol;
-	DWORD x, y;
-	DWORD score;
-	//status
 };
 
 struct SHAREDMEMGAME {

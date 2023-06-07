@@ -23,7 +23,7 @@ BOOL createSharedMemoryAndInit(pData data) {
 		}
 	} //create sharedMem for game
 
-	data->sharedMemGame = (ShmGame*)MapViewOfFile(data->hFileMapFrogger, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmGame)); // Shared Memory
+	data->sharedMemGame = (pShmGame)MapViewOfFile(data->hFileMapFrogger, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmGame)); // Shared Memory
 	if (data->sharedMemGame == NULL) {
 		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
 		CloseHandle(data->hFileMapFrogger);
