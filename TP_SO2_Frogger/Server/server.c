@@ -152,13 +152,14 @@ DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM
 			//data->game[0].nFrogs++;
 			//data->game[0].frogX = 10;
 			//data->game[0].frogY = 2;
-			if (data->game[0].nFrogs == 0 && (i == data->game->rows - 1)) {
+			if (data->game[0].nFrogs == 0 && (i == data->game->rows-1)) {
 				while (data->game[0].nFrogs <= 1) {
 					//aux = rand() % data->game->columns;
 					data->game[0].board[i][10] = _T('s');
 					data->game[0].frogY = i;
 					data->game[0].frogX = 10;
 					data->game[0].nFrogs++;
+					_tprintf(TEXT("\n o sapo ta aqui %d %d  \n"), data->game[0].frogY, data->game[0].frogX);
 					return 1;
 				}
 			}
@@ -169,7 +170,7 @@ DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM
 void insertCars(pData data) {
 	DWORD count = 0;
 	
-	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
+	data->game[0].nCars = 24;//rand() % (data->game[0].rows - 2) * 8;
 	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
 
 	if (data->game[0].nCars == 0) {
@@ -258,35 +259,65 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 	
 	return 1;
 }
+BOOLEAN checkFrogSide(pData data) {
+	_tprintf(_T("\n coordenadas %d %d esta o simb: %c"), data->game[0].frogY - 1, data->game[0].frogX, data->game[0].board[data->game[0].frogY - 1][data->game[0].frogX]);
+		
+	return data->game[0].board[data->game[0].frogY - 1][data->game[0].frogX] == _T('c');
+}
 
 BOOL moveFrog(pData data) {
+	
 	for (DWORD i = data->game[0].rows - 1; i > 0; i--) {
 		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
-			if (data->game[0].board[i][j] == _T('s') && i != 0) {
-				data->game[0].board[i - 1][j] = _T('s');
-				data->game[0].board[i][j] = _T('-');
-				data->game[0].frogX = j;
-				data->game[0].frogY = i;
-				Sleep(4000);
+			if (i==data->game[0].frogY && j==data->game[0].frogX) {
+				if (!checkFrogSide(data)) {
+					
+					data->game[0].board[i - 1][j] = _T('s');
+					
+
+					if (data->game[0].board[i][j] == _T('s')) {
+						data->game[0].board[i][j] = _T('-');
+						_tprintf(_T("\nola\n"));
+					}
+					data->game[0].frogX = j;
+					data->game[0].frogY = i - 1;
+					Sleep(4000);
+
+						
+				}
+				else {
+					
+					data->game[0].board[data->game[0].frogY][data->game[0].frogX] = _T('-');
+					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
+					data->game[0].frogY = data->game[0].rows-1;
+					data->game[0].frogX = 10;
+					Sleep(4000);
+				}
+				return FALSE;
 			}
+			
 		}
 	}
-
-	if (data->game[0].frogY == 1) {
+	if (data->game[0].frogY == 0) {
 		_tprintf(_T("\nCheguei à meta.\n"));
 		return TRUE;
 	}
-
 	return FALSE;
 }
 
+	
 BOOL moveCars(pData data) {
 	if (data->game[0].isMoving == TRUE) {
 		if (data->game[0].direction == FALSE) { // move from RIGHT - LEFT
 			for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
 				for (DWORD j = 0; j < data->game[0].columns - 1; j++) { // iterate columns
 					if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
-						TCHAR prevElement = data->game[0].board[i][j + 1]; // store prev element before moving to the first spot of row
+						TCHAR prevElement = data->game[0].board[i][j + 1]; 
+						if (prevElement == _T('s')) {
+							data->game[0].board[i][0] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = _T('-');
+						}
+						// store prev element before moving to the first spot of row
 						data->game[0].board[i][0] = data->game[0].board[i][j]; // give the last element of row to the first
 						data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
 					}
@@ -299,7 +330,13 @@ BOOL moveCars(pData data) {
 						}
 					}
 					else if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
-						TCHAR prevElement = data->game[0].board[i][j + 1]; // otherwise move normally
+						TCHAR prevElement = data->game[0].board[i][j + 1];
+						if (prevElement == _T('s')) {
+							_tprintf(_T("\n entrei\n"));
+							data->game[0].board[i][0] = data->game[0].board[i][j];
+							data->game[0].board[i][j] = _T('-');
+						}
+						 // otherwise move normally
 						data->game[0].board[i][j - 1] = data->game[0].board[i][j];
 						data->game[0].board[i][j] = prevElement;
 					}
@@ -319,9 +356,18 @@ BOOL moveCars(pData data) {
 						}
 					}
 					if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
-						TCHAR prevElement = data->game[0].board[i][j - 1]; // otherwise move normally
-						data->game[0].board[i][j + 1] = data->game[0].board[i][j];
-						data->game[0].board[i][j] = prevElement;
+						TCHAR prevElement = data->game[0].board[i][j - 1];
+						if (prevElement == _T('s')) {
+							
+							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+							data->game[0].board[i][j] = _T('-');
+						}
+						else
+						{
+							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+							data->game[0].board[i][j] = prevElement;
+						}// otherwise move normally
+						
 					}
 
 					if (data->game[0].board[i][0] == _T('c')) {
@@ -376,7 +422,7 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 		if (!data->game->isSuspended && data->game[0].time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
 			
-			moveCars(data);
+			
 			Sleep(4000);
 			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
 		}
@@ -568,24 +614,7 @@ void startgame(pData data) {
 	insertFrog(data);
 }
 
-BOOLEAN checkFrogSide(pData data) {
-	DWORD carRow;
-	DWORD carColumn;
-	for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
-		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			if (data->game[0].board[i][j] == _T('c')) {
-				carColumn = j;
-				carRow = i;
-				if (carRow == data->game[0].frogY && carColumn == data->game[0].frogX) {
-					_tprintf(_T("\nMatei o sapo @ [%d, %d]"), i, j);
-					data->game[0].board[data->game[0].frogX][data->game[0].frogY] = _T('-'); // Marcar a posição onde o sapo morreu
-					return TRUE;
-				}
-			}
-		}
-	}
-	return FALSE;
-}
+
 
 BOOLEAN checkFrogCollisionSide(pData data) {
 	//check for how it's moving (LEFT _ RIGHT / RIGHT _ LEFT)
@@ -631,7 +660,8 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 	BOOL end = FALSE;
 	//BOOL begin = FALSE;
 
-	while (!end) { // enquanto o jogo não acabou
+	while (!end) { 
+		// enquanto o jogo não acabou
 		if (!data->game[0].isSuspended) { // e não está suspenso/ver do tempo
 			/*if (data->game[0].board[0] == _T('s')) { // ver isto melhor depois (isto é a lógica do sapo estar na meta == ganha jogo)
 				data->game[0].playerScore += 100; // quando chega à meta ganha 100 pontos
@@ -640,12 +670,14 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				Sleep(200);
 				continue;
 			}*/
-
+			
 			if (data->game[0].nFrogs == 0) {
 				_tprintf(_T("\n[NAO HA SAPOS].\n"));
 				end = TRUE;
 				continue;
 			}
+			
+			moveCars(data);
 
 			if (moveFrog(data)) { // ganhou o jogo
 				win = TRUE;
@@ -653,8 +685,9 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				Sleep(200);
 				continue;
 			}
+			
 
-			if (checkFrogSide(data)) { // collision de lado não está a funcionar bem
+		/*	if (checkFrogSide(data)) { // collision de lado não está a funcionar bem
 				if (data->game[0].frogLives > 0) {
 					_tprintf(_T("\nVidas: %d"), data->game[0].frogLives);
 					data->game[0].frogLives--; // lose 1 HP 
@@ -670,12 +703,12 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					end = TRUE;
 					Sleep(200);
 					continue;
-				}
+				} 
 			}
 			else {
 				Sleep(200);
 				continue;
-			}
+			} */
 
 			if (data->game[0].time == 0 && data->game[0].frogY != 0) { // se o tempo for 0 e não chegou à meta então
 				if (data->game[0].frogLives != 0) {

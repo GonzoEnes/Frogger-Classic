@@ -1,4 +1,1 @@
-﻿  operator.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(269,12): warning C4013: 'time' undefined; assuming extern returning int
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(227): warning C4716: 'receiveGameData': must return a value
-  Operator.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe
+﻿  Operator.vcxproj -> C:\Users\henri\Desktop\UNI\Githubrepos\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe
