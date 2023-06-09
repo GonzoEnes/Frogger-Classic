@@ -10,6 +10,9 @@ C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(548
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(549,103): warning C4020: 'RegSetValueExW': too many actual parameters
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(573,102): warning C4020: 'RegSetValueExW': too many actual parameters
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(574,102): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(681,6): warning C4101: 'num': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(741,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(853,29): error C2198: 'GetOverlappedResultEx': too few arguments for call
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(685,6): warning C4101: 'num': unreferenced local variable
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(745,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(168): warning C4715: 'insertFrog': not all control paths return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(680): warning C4716: 'threadFroggerMultiPlayer': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(674): warning C4716: 'threadFroggerSinglePlayer': must return a value
+  Server.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe

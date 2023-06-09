@@ -1,0 +1,5 @@
+﻿  FrogGUI.c
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\frog.h(13,2): warning C4091: 'typedef ': ignored on left of 'FROGCOMMS' when no variable is declared
+  FrogGUI.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\FrogGUI.exe

@@ -111,7 +111,7 @@ int _tmain(int argc, TCHAR** argv) {
 		return -1;
 	}
 
-	hPipeComms = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+	hPipeComms = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (hPipeComms == NULL) {
 		_tprintf(_T("\nCan't connect to named pipe. [%d]\n"), GetLastError());

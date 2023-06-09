@@ -613,6 +613,9 @@ void startgame(pData data) {
 	data->game[0].nFrogs = 0;
 	// check for gametype
 	data->game[0].player1.nLives = 3;
+	data->game[0].player1.score = 0;
+	data->game[0].player1.x = 10;
+	data->game[0].player1.y = 0;
 
 	initBoard(data);
 	insertCars(data);
@@ -648,6 +651,7 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 			if (moveFrog(data)) { // ganhou o jogo ISTO É Sò PARA DEBUG, NÃO VAI ESTAR DENTO DUMA THREAAD
 				win = TRUE;
 				end = TRUE;
+				data->game[0].player1.score += 100;
 				Sleep(200);
 				continue;
 			}
