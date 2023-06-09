@@ -164,7 +164,7 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 				cmd.parameter1 = _ttoi(next);
 			}
 
-			if (cmd.parameter != 0 && token != NULL && cmd.parameter1 != 0) // if it read correctly
+			if (cmd.parameter >= 0 && token != NULL && cmd.parameter1 >= 0) // if it read correctly
 				CopyMemory(&(data->sharedMemCmd->operatorCmds[i]), &cmd, sizeof(Command)); // send to server
 
 			i++; // move to next cmd
@@ -218,6 +218,9 @@ DWORD WINAPI receiveGameData(LPVOID params) {
 	pData data = (pData)params;
 
 	while (!data->game[0].isShutdown) {
+		if (data->game[0].isShutdown) {
+			break;
+		}
 		WaitForSingleObject(data->hReadSem, INFINITE); // wait for sync mechanisms
 		WaitForSingleObject(data->hMutex, INFINITE);
 		CopyMemory(&data->game[0], &data->sharedMemGame->game[0], sizeof(Game)); // get data from sharedMemGame pointer that has info on game
@@ -254,10 +257,12 @@ VOID screenClear() {
 DWORD WINAPI showBoardConstant(LPVOID params) {
 	pData data = (pData)params;
 
-	while (1) {
+	while (!data->game[0].isShutdown) {
+		if (data->game[0].isShutdown) {
+			break;
+		}
 		Sleep(4000);
 		screenClear();
-		_tprintf(_T("\nA printar board...\n"));
 		showBoard(data);
 	}
 

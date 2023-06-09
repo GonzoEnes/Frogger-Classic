@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.33414.496
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33423.256
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Frog", "Frog\Frog.vcxproj", "{238ACF6E-0180-4650-B6CA-E5D095D01BFA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{3D881697-0CE2-48E4-8168-77FE0CEA0FA5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Operator", "Operator\Operator.vcxproj", "{9F0352E7-F55D-4DEC-82B1-9B8558DA32DF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrogGUI", "FrogGUI\FrogGUI.vcxproj", "{F916EF63-09BD-4969-8C8A-C442C6499D7C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{9F0352E7-F55D-4DEC-82B1-9B8558DA32DF}.Release|x64.Build.0 = Release|x64
 		{9F0352E7-F55D-4DEC-82B1-9B8558DA32DF}.Release|x86.ActiveCfg = Release|Win32
 		{9F0352E7-F55D-4DEC-82B1-9B8558DA32DF}.Release|x86.Build.0 = Release|Win32
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Debug|x64.ActiveCfg = Debug|x64
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Debug|x64.Build.0 = Debug|x64
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Debug|x86.ActiveCfg = Debug|Win32
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Debug|x86.Build.0 = Debug|Win32
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Release|x64.ActiveCfg = Release|x64
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Release|x64.Build.0 = Release|x64
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Release|x86.ActiveCfg = Release|Win32
+		{F916EF63-09BD-4969-8C8A-C442C6499D7C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

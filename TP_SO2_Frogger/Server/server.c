@@ -156,10 +156,10 @@ DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM
 				while (data->game[0].nFrogs <= 1) {
 					//aux = rand() % data->game->columns;
 					data->game[0].board[i][10] = _T('s');
-					data->game[0].frogY = i;
-					data->game[0].frogX = 10;
+					data->game[0].player1.y = i;
+					data->game[0].player1.x = 10;
 					data->game[0].nFrogs++;
-					_tprintf(TEXT("\n o sapo ta aqui %d %d  \n"), data->game[0].frogY, data->game[0].frogX);
+					_tprintf(TEXT("\n o sapo ta aqui %d %d  \n"), data->game[0].player1.y, data->game[0].player1.x);
 					return 1;
 				}
 			}
@@ -254,43 +254,43 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 	}
 
 	_tprintf(_T("\nInserting obstacle at position X: %d and Y: %d"), row, column);
+
+	WaitForSingleObject(data->hMutex, INFINITE);
 	
 	data->game[0].board[row][column] = obstacle; // insert obstacle in 
+
+	ReleaseMutex(data->hMutex);
 	
 	return 1;
 }
-BOOLEAN checkFrogSide(pData data) {
-	_tprintf(_T("\n coordenadas %d %d esta o simb: %c"), data->game[0].frogY - 1, data->game[0].frogX, data->game[0].board[data->game[0].frogY - 1][data->game[0].frogX]);
-		
-	return data->game[0].board[data->game[0].frogY - 1][data->game[0].frogX] == _T('c');
-}
 
+BOOLEAN checkFrogSide(pData data) {
+	_tprintf(_T("\n coordenadas %d %d esta o simb: %c"), data->game[0].player1.y - 1, data->game[0].player1.x, data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x]);
+		
+	return data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('c') || data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('O');
+}
+	
 BOOL moveFrog(pData data) {
 	
 	for (DWORD i = data->game[0].rows - 1; i > 0; i--) {
 		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
-			if (i==data->game[0].frogY && j==data->game[0].frogX) {
+			if (i == data->game[0].player1.y && j== data->game[0].player1.x) {
 				if (!checkFrogSide(data)) {
-					
 					data->game[0].board[i - 1][j] = _T('s');
-					
 
 					if (data->game[0].board[i][j] == _T('s')) {
 						data->game[0].board[i][j] = _T('-');
-						_tprintf(_T("\nola\n"));
 					}
-					data->game[0].frogX = j;
-					data->game[0].frogY = i - 1;
-					Sleep(4000);
-
-						
+					data->game[0].player1.x = j;
+					data->game[0].player1.y = i - 1;
+					Sleep(4000);	
 				}
 				else {
-					
-					data->game[0].board[data->game[0].frogY][data->game[0].frogX] = _T('-');
+					// check para as vidas. parar de spwanar sapos se vidas = 0
+					data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] = _T('-');
 					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
-					data->game[0].frogY = data->game[0].rows-1;
-					data->game[0].frogX = 10;
+					data->game[0].player1.y = data->game[0].rows-1;
+					data->game[0].player1.x = 10;
 					Sleep(4000);
 				}
 				return FALSE;
@@ -298,7 +298,7 @@ BOOL moveFrog(pData data) {
 			
 		}
 	}
-	if (data->game[0].frogY == 0) {
+	if (data->game[0].player1.y == 0) {
 		_tprintf(_T("\nCheguei à meta.\n"));
 		return TRUE;
 	}
@@ -337,6 +337,7 @@ BOOL moveCars(pData data) {
 							data->game[0].board[i][j] = _T('-');
 						}
 						 // otherwise move normally
+
 						data->game[0].board[i][j - 1] = data->game[0].board[i][j];
 						data->game[0].board[i][j] = prevElement;
 					}
@@ -357,8 +358,19 @@ BOOL moveCars(pData data) {
 					}
 					if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
 						TCHAR prevElement = data->game[0].board[i][j - 1];
+						if (data->game[0].board[i][j + 1] == _T('O')) {
+							_tprintf(_T("\nEntrei aqui oaodasopidawoidj\n"));
+							data->game[0].board[i][j + 1] = _T('O');
+							data->game[0].board[i][j] = prevElement;
+							continue;
+						}
+
 						if (prevElement == _T('s')) {
-							
+
+							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+							data->game[0].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
+						}
+						else if (prevElement == _T('O')) {
 							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = _T('-');
 						}
@@ -366,7 +378,13 @@ BOOL moveCars(pData data) {
 						{
 							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = prevElement;
-						}// otherwise move normally
+						}
+						
+						/*else
+						{
+							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+							data->game[0].board[i][j] = prevElement;
+						} // otherwise move normally*/
 						
 					}
 
@@ -393,17 +411,6 @@ DWORD changeDirection(pData data) {
 
 	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game[0].nCars);
 
-	/*switch (data->game[0].direction) {
-		case TRUE: // andar para a direita
-			data->game[0].direction = FALSE; // andar para a esquerda
-			_tprintf(_T("\nDirections changed from LEFT - RIGHT to RIGHT - LEFT\n"));
-		case FALSE:
-			data->game[0].direction = TRUE; // andar para a direita
-			_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
-		default:
-			return -2;
-	}*/
-
 	if (data->game[0].direction == FALSE) {
 		data->game[0].direction = TRUE; // andar para a direita
 		_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
@@ -419,16 +426,12 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 	pData data = (pData)params;
 
 	while (!data->game[0].isShutdown && !data->game[0].isSuspended) {
-		if (!data->game->isSuspended && data->game[0].time > 0) {
+		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
-			
-			
 			Sleep(4000);
 			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
 		}
 		else if (data->time == 0) {
-			// aqui voltar a meter os sapos na startLine
-			_tprintf(_T("\nPerdeu! O tempo expirou!\n"));
 			data->game[0].isShutdown = TRUE;
 			return 1;
 		}
@@ -493,6 +496,8 @@ DWORD WINAPI sendGameData(LPVOID params) {
 		ReleaseMutex(data->hMutex);
 		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui é o sem de escrita porque vai escrever para dentro do pointer da shmMem
 	}
+
+	return 1;
 }
 
 BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
@@ -607,50 +612,11 @@ void startgame(pData data) {
 	//data->game[1].columns = (DWORD)20;
 	data->game[0].nFrogs = 0;
 	// check for gametype
-	data->game[0].frogLives = 3;
+	data->game[0].player1.nLives = 3;
 
 	initBoard(data);
 	insertCars(data);
 	insertFrog(data);
-}
-
-
-
-BOOLEAN checkFrogCollisionSide(pData data) {
-	//check for how it's moving (LEFT _ RIGHT / RIGHT _ LEFT)
-	if (!data->game[0].direction) {
-		for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
-			for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
-				if (data->game[0].direction == TRUE) { // RIGHT - LEFT
-					if (data->game[0].board[i][j] == _T('s')) {
-						if (data->game[0].board[i][j+1] == _T('c') || data->game[0].board[i][j+1] == _T('O')) {
-							_tprintf(_T("\nMatei o sapo pelo lado @ [%d, %d]"), i, j);
-							data->game[0].board[i][j] = _T('M'); // Marcar a posição onde o sapo morreu
-							return TRUE;
-						}
-					}
-				}
-
-			}
-		}
-	}
-	else {
-		for (DWORD i = 1; i < data->game[0].rows - 1; i++) {
-			for (DWORD j = data->game[0].columns; j > 0; j--) {
-				if (data->game[0].direction == FALSE) { // RIGHT - LEFT
-					if (data->game[0].board[i][j] == _T('s')) {
-						if (data->game[0].board[i][j - 1] == _T('c') || data->game[0].board[i][j - 1] == _T('O')) {
-							_tprintf(_T("\nMatei o sapo pelo lado @ [%d, %d]"), i, j);
-							data->game[0].board[i][j] = _T('M'); // Marcar a posição onde o sapo morreu
-							return TRUE;
-						}
-					}
-				}
-
-			}
-		}
-	}
-	return FALSE;
 }
 
 DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
@@ -679,7 +645,7 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 			
 			moveCars(data);
 
-			if (moveFrog(data)) { // ganhou o jogo
+			if (moveFrog(data)) { // ganhou o jogo ISTO É Sò PARA DEBUG, NÃO VAI ESTAR DENTO DUMA THREAAD
 				win = TRUE;
 				end = TRUE;
 				Sleep(200);
@@ -687,32 +653,9 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 			}
 			
 
-		/*	if (checkFrogSide(data)) { // collision de lado não está a funcionar bem
-				if (data->game[0].frogLives > 0) {
-					_tprintf(_T("\nVidas: %d"), data->game[0].frogLives);
-					data->game[0].frogLives--; // lose 1 HP 
-					_tprintf(_T("\nVidas: %d"), data->game[0].frogLives);
-					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
-					data->game[0].frogX = 10;
-					data->game[0].frogY = data->game[0].rows - 1;
-					Sleep(200);
-					continue;
-					} 
-				
-				else {
-					end = TRUE;
-					Sleep(200);
-					continue;
-				} 
-			}
-			else {
-				Sleep(200);
-				continue;
-			} */
-
-			if (data->game[0].time == 0 && data->game[0].frogY != 0) { // se o tempo for 0 e não chegou à meta então
-				if (data->game[0].frogLives != 0) {
-					data->game[0].frogLives--;
+			if (data->game[0].time == 0 && data->game[0].player1.y != 0) { // se o tempo for 0 e não chegou à meta então
+				if (data->game[0].player1.nLives != 0) {
+					data->game[0].player1.nLives--;
 					//data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
 					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
 					Sleep(200);
@@ -730,7 +673,40 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
 	pData data = (pData)params;
 
+}
 
+DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
+	DWORD n;
+	BOOL returnValue;
+	int num;
+
+	pData data = (pData)params;
+
+	while (!data->game[0].isShutdown) {
+		for (DWORD i = 0; i < NUM; i++) {
+			WaitForSingleObject(data->threadData->hPipeMutex, INFINITE);
+
+			if (data->threadData->hPipe[i].active) {
+				if (!WriteFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL)) {
+					_tprintf(_T("\nError writing on frog pipe.\n"));
+					data->game[0].isShutdown = TRUE;
+				}
+				else {
+					returnValue = ReadFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL);
+					data->game->board[data->game->player1.y][data->game->player1.x] = _T('s'); // é a jogada que vai fazer
+				}
+			}
+			ReleaseMutex(data->threadData->hPipeMutex);
+		}
+	}
+
+	data->threadData->end = 1;
+
+	for (DWORD i = 0; i < NUM; i++) {
+		SetEvent(data->threadData->hEvents[i]);
+	}
+
+	return 1;
 }
 
 int _tmain(int argc, TCHAR** argv) {
@@ -738,13 +714,30 @@ int _tmain(int argc, TCHAR** argv) {
 	HANDLE hReceiveCmdThread;
 	HANDLE hSendGameDataThread;
 	HANDLE hDecreaseTimerThread;
+	HANDLE hTempEvent; // para os pipes
+	HANDLE hPipe;
+	HANDLE hPipeThread;
 	HANDLE hSinglePlayerThread;
 	//HANDLE hMultiPlayerThread;
+	
 	Game game[2] = { 0 };
+	
 	RegConfig reg = {0};
+	
+	ThreadData threadData = { 0 };
+	
 	Data data;
+
+	DWORD nBytes; // for pipe read/writes
+
+	data.threadData = &threadData;
+	
 	data.game[0] = game[0];
+	
 	data.game[1] = game[1];
+
+	DWORD nClients = 0, num;
+	
 	srand(time(NULL));
 
 #ifdef UNICODE
@@ -769,19 +762,66 @@ int _tmain(int argc, TCHAR** argv) {
 
 	_tprintf(TEXT("\nSpeed for cars = %d\n"), data.game->carSpeed);
 
-	startgame(&data);
-	Sleep(5000);
+	data.threadData->end = 0;
 
-	hDecreaseTimerThread = CreateThread(NULL, 0, decreaseTime, &data, 0, NULL);
-	if (hDecreaseTimerThread == NULL) {
-		_tprintf(_T("\nCan't create DECREASETIMERTHREAD [%d]"), GetLastError());
-		return -10;
+	data.threadData->hPipeMutex = CreateMutex(NULL, FALSE, NULL);
+
+	if (data.threadData->hPipeMutex == NULL) {
+		_tprintf(_T("\nError creating PIPE_MUTEX. [%d]"), GetLastError());
+		return -20;
+	}
+
+	startgame(&data);
+	//Sleep(5000);
+
+	for (DWORD i = 0; i < NUM; i++) {
+		_tprintf(_T("\nServer creating pipe: '%s'...\n"), PIPE_NAME);
+
+		hTempEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+		if (hTempEvent == NULL) {
+			_tprintf(_T("\nError creating pipe event [%d]"), GetLastError());
+			exit(-20);
+		}
+
+		hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_WAIT | PIPE_TYPE_MESSAGE, NUM, sizeof(Game), sizeof(Game), 1000, NULL);
+
+		if (hPipe == INVALID_HANDLE_VALUE) {
+			_tprintf(_T("\nError creating named pipe. [%d]"), GetLastError());
+			exit(-10);
+		}
+
+		ZeroMemory(&data.threadData->hPipe[i].overlap, sizeof(data.threadData->hPipe[i].overlap)); // clear memory of overlapped struct
+		
+		data.threadData->hPipe[i].hInstance = hPipe;
+		data.threadData->hPipe[i].overlap.hEvent = hTempEvent;
+
+		data.threadData->hEvents[i] = hTempEvent;
+		data.threadData->hPipe[i].active = FALSE;
+
+		if (ConnectNamedPipe(hPipe, &data.threadData->hPipe[i].overlap)) {
+			_tprintf(_T("\nError while connecting to the client...\n"));
+			exit(-1);
+		}
+	}
+
+	hPipeThread = CreateThread(NULL, 0, pipeReadAndWriteThread, &data, 0, NULL);
+
+	if (hPipeThread == NULL) {
+		_tprintf(_T("\nError creating pipe thread! [%d]"), GetLastError());
+		exit(-100);
 	}
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
 		_tprintf(_T("\nCan't create RECEIVECMDTHREAD [%d]"), GetLastError());
 		return 0;
+	}
+
+	hDecreaseTimerThread = CreateThread(NULL, 0, decreaseTime, &data, CREATE_SUSPENDED, NULL);
+	if (hDecreaseTimerThread == NULL) {
+		_tprintf(_T("\nCan't create DECREASETIMERTHREAD [%d]"), GetLastError());
+		return -10;
 	}
 
 	hSendGameDataThread = CreateThread(NULL, 0, sendGameData, &data, 0, NULL);
@@ -795,6 +835,38 @@ int _tmain(int argc, TCHAR** argv) {
 	if (hSinglePlayerThread == NULL) {
 		_tprintf(_T("\nCan't create SINGLEPLAYERTHREAD [%d]"), GetLastError());
 		return -2;
+	}
+
+	while ((!data.game[0].isShutdown || !data.game[1].isShutdown) && nClients < NUM + 1) {
+		DWORD result = WaitForMultipleObjects(NUM, threadData.hEvents, FALSE, 1000);
+		num = result - WAIT_OBJECT_0;
+		if (num >= 0 && num < NUM) {
+			_tprintf(_T("\nFrog connected...\n"));
+			if (data.game[0].gameType == 1) {
+				if (!data.game[0].suspended)
+					ResumeThread(hDecreaseTimerThread);
+			}
+			else {
+				if (data.game[0].suspended == FALSE && nClients == 1)
+					ResumeThread(hDecreaseTimerThread);
+			}
+			if (GetOverlappedResult(data.threadData->hPipe[num].hInstance, &data.threadData->hPipe[num].overlap, &nBytes, FALSE)) {
+				ResetEvent(data.threadData->hEvents[num]);
+				WaitForSingleObject(data.threadData->hPipeMutex, INFINITE);
+				data.threadData->hPipe[num].active = TRUE;
+				ReleaseMutex(data.threadData->hPipeMutex);
+			}
+			nClients++;
+		}
+
+	}
+	for (num = 0; num < NUM; num++) {
+		_tprintf(_T("\nCLIENT DISCONNECTED! Shutting down %d pipe...\n"), num);
+		if (!DisconnectNamedPipe(data.threadData->hPipe[num].hInstance)) {
+			_tprintf(_T("\nError shutting down the pipe (DisconnectNamedPipe) %d.\n"), GetLastError());
+			exit(-1);
+		}
+		CloseHandle(data.threadData->hPipe[num].hInstance);
 	}
 
 	/*if (data.game[0].gameType == 2) { // if it's multiplayer

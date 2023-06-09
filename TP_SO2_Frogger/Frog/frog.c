@@ -22,6 +22,7 @@ void showGame(pGame game) {
 void playFrogger(pGame game, HANDLE hPipeComms) {
 	BOOL ret;
 	DWORD nBytes;
+	TCHAR opt[256];
 
 	while (!game->isShutdown) {
 		ret = ReadFile(hPipeComms, game, sizeof(Game), &nBytes, NULL);
@@ -36,9 +37,41 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 
 		_tprintf(_T("\nData read successfully. Starting game...\n"));
 
-		/*do {
-			
-		} while ();*/
+		do {
+			/*while (_tcscmp(opt, _T("A")) != 0 && _tcscmp(opt, _T("D")) != 0 && _tcscmp(opt, _T("W")) != 0 && _tcscmp(opt, _T("S")) != 0) {
+				_tprintf(_T("\nMove (PAUSE to pause the game): "));
+				
+				_fgetts(opt, sizeof(opt), stdin);
+
+				if (_tcscmp(opt, _T("W")) == 0) {
+					game->player1.y -= 1;
+				}
+
+				else if (_tcscmp(opt, _T("A")) == 0) {
+					game->player1.x -= 1;
+				}
+
+				else if (_tcscmp(opt, _T("S")) == 0) {
+					game->player1.y += 1;
+				}
+
+				else if (_tcscmp(opt, _T("D")) == 0) {
+					game->player1.x += 1;
+				}
+
+
+				if (_tcscmp(opt, _T("A")) != 0 || _tcscmp(opt, _T("D")) != 0 || _tcscmp(opt, _T("W")) != 0 || _tcscmp(opt, _T("S")) != 0) {
+					_tprintf(_T("\nInsert a valid option!\n"));
+					break;
+				}
+
+				if (_tcscmp(opt, _T("PAUSE") == 0)) {
+					game->isSuspended = TRUE;
+					break;
+				}
+			}*/
+
+		} while (!game->isShutdown);
 
 		if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
 			_tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
@@ -46,6 +79,10 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 
 		else {
 			_tprintf(_T("\nData successfully sent to server...\n"));
+		}
+
+		if (game->isSuspended) {
+			break;
 		}
 	}
 }
@@ -70,16 +107,18 @@ int _tmain(int argc, TCHAR** argv) {
 	_tprintf(_T("\n--------------FROG/CLIENT-------------\n"));
 
 	if (!WaitNamedPipe(PIPE_NAME, NMPWAIT_WAIT_FOREVER)) {
-		_tprintf(_T("\nCan't connect to named pipe. [%d]\n"), GetLastError());
+		_tprintf(_T("\nCan't connect to named pipe. Server isn't running. [%d]\n"), GetLastError());
 		return -1;
 	}
 
-	hPipeComms = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	hPipeComms = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
 	if (hPipeComms == NULL) {
 		_tprintf(_T("\nCan't connect to named pipe. [%d]\n"), GetLastError());
 		return -2;
 	}
+
+	_tprintf(_T("\nSuccessfully connected.\n"));
 
 	while (!game.isShutdown) {
 		if (!game.isSuspended) {
@@ -87,7 +126,7 @@ int _tmain(int argc, TCHAR** argv) {
 		}
 
 		else {
-			_tprintf("\nTo unpause the game, press any key...");
+			_tprintf(_T("\nTo unpause the game, press any key..."));
 			_fgetts(opt, sizeof(opt), stdin);
 			game.isSuspended = FALSE;
 		}
