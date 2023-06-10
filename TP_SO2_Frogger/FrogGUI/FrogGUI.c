@@ -2,10 +2,12 @@
 //
 
 #include <windows.h>
+#include <windowsx.h>
 #include <tchar.h>
 #include "framework.h"
 #include "FrogGUI.h"
 #include "frog.h"
+#include "Resource.h"
 /* ===================================================== */
 /* Programa base (esqueleto) para aplicações Windows     */
 /* ===================================================== */
@@ -19,12 +21,12 @@
 //			1) É chamada pelo Windows (callback) 
 //			2) Executa código em função da mensagem recebida
 
-LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
+
 
 // Nome da classe da janela (para programas de uma só janela, normalmente este nome é 
 // igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
 // propriedades do objecto janela
-TCHAR szProgName[] = TEXT("Base");
+
 
 DWORD WINAPI frogThread(LPVOID params) {
     BOOL returnValue;
@@ -33,14 +35,18 @@ DWORD WINAPI frogThread(LPVOID params) {
 
     while (!data->game->isShutdown) {
         returnValue = ReadFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
+        _tprintf(_T("AQUI: %d\n"), data->game->rows);
         if (!returnValue || &n == 0) {
             break;
         }
         WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
     }
-    return 1;
+    return (1);
 }
 
+LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
+
+TCHAR szProgName[] = TEXT("Base");
 // ============================================================================
 // FUNÇÃO DE INÍCIO DO PROGRAMA: WinMain()
 // ============================================================================
@@ -60,6 +66,24 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     HWND hWnd;		// hWnd é o handler da janela, gerado mais abaixo por CreateWindow()
     MSG lpMsg;		// MSG é uma estrutura definida no Windows para as mensagens
     WNDCLASSEX wcApp;	// WNDCLASSEX é uma estrutura cujos membros servem para 
+    Game game;
+    FrogData data;
+    HANDLE hFroggerThread;
+
+    game.isShutdown = FALSE;
+    game.isSuspended = FALSE;
+
+    data.game = &game;
+
+    data.hPipe = CreateFile(PIPE_NAME, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    hFroggerThread = CreateThread(NULL, 0, frogThread, &data, 0, NULL);
+
+    if (hFroggerThread == NULL) {
+        _tprintf(_T("\nError creating thread for frog.\n"));
+        exit(-100);
+    }
+
               // definir as características da classe da janela
 
     // ============================================================================
@@ -89,7 +113,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     wcApp.lpszMenuName = NULL;			// Classe do menu que a janela pode ter
                               // (NULL = não tem menu)
     wcApp.cbClsExtra = 0;				// Livre, para uso particular
-    wcApp.cbWndExtra = 0;				// Livre, para uso particular
+    wcApp.cbWndExtra = sizeof(pFrogData);				// Livre, para uso particular
     wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     // "hbrBackground" = handler para "brush" de pintura do fundo da janela. Devolvido por
     // "GetStockObject".Neste caso o fundo será branco
@@ -104,20 +128,42 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     // 3. Criar a janela
     // ============================================================================
     hWnd = CreateWindow(
-        szProgName,			// Nome da janela (programa) definido acima
-        TEXT("Frogger"),// Texto que figura na barra do título
-        WS_OVERLAPPEDWINDOW,	// Estilo da janela (WS_OVERLAPPED= normal)
-        CW_USEDEFAULT,		// Posição x pixels (default=à direita da última)
-        CW_USEDEFAULT,		// Posição y pixels (default=abaixo da última)
-        CW_USEDEFAULT,		// Largura da janela (em pixels)
-        CW_USEDEFAULT,		// Altura da janela (em pixels)
-        (HWND)HWND_DESKTOP,	// handle da janela pai (se se criar uma a partir de
-                        // outra) ou HWND_DESKTOP se a janela for a primeira, 
-                        // criada a partir do "desktop"
-        (HMENU)NULL,			// handle do menu da janela (se tiver menu)
-        (HINSTANCE)hInst,		// handle da instância do programa actual ("hInst" é 
-                        // passado num dos parâmetros de WinMain()
-        0);				// Não há parâmetros adicionais para a janela
+        szProgName, // Nome da janela (programa) definido acima
+        TEXT("Frogger"), // Texto que figura na barra do título
+        WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, // Estilo da janela (WS_OVERLAPPED= normal)
+        CW_USEDEFAULT, // Posição x pixels (default=à direita da última)
+        CW_USEDEFAULT, // Posição y pixels (default=abaixo da última)
+        1280, // Largura da janela (em pixels)
+        720, // Altura da janela (em pixels)
+        (HWND)HWND_DESKTOP, // handle da janela pai (se se criar uma a partir de
+        // outra) ou HWND_DESKTOP se a janela for a primeira, 
+        // criada a partir do "desktop"
+        (HMENU)NULL, // handle do menu da janela (se tiver menu)
+        (HINSTANCE)hInst, // handle da instância do programa actual ("hInst" é 
+        // passado num dos parâmetros de WinMain()
+        0); // Não há parâmetros adicionais para a janela
+
+
+    data.hWnd = hWnd;
+
+    SetWindowLongPtr(hWnd, 0, (LONG_PTR)&data);
+
+    if (data.hPipe == INVALID_HANDLE_VALUE) {
+        DestroyWindow(hWnd);
+    }
+
+    HWND hwndButtonQuit = CreateWindow(
+        L"BUTTON",  // Predefined class; Unicode assumed 
+        L"Quit",      // Button text 
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
+        750,         // x position 
+        600,         // y position 
+        100,        // Button width
+        75,        // Button height
+        hWnd,     // Parent window
+        (HMENU)BTN_QUIT,       // No menu.
+        NULL,
+        NULL);
       // ============================================================================
       // 4. Mostrar a janela
       // ============================================================================
@@ -186,7 +232,93 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 // ============================================================================
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
+	DWORD xPos;
+	DWORD yPos;
+	RECT rect;
+	HDC hdc;
+	pFrogData data;
+    PAINTSTRUCT ps;
+    DWORD totalPixels = 0;
+    DWORD n;
+	data = (pFrogData)GetWindowLongPtr(hWnd, 0);
+    static HBITMAP hBitmap;
+	static HBITMAP hBitmapBeginEnd;
+	static HBITMAP hBitmapCar;
+	static HBITMAP hBitmapFrog;
+    static BITMAP bitmap = { 0 };
+	static BITMAP bitmapBeginEnd = { 0 };
+    static BITMAP bitmapCar = { 0 };
+	static BITMAP bitmapFrog = { 0 };
+	static HDC bitmapDC = NULL;
+	static HDC bitmapBeginEndDC = NULL;
+	static HDC bitmapCarDC = NULL;
+	static HDC bitmapFrogDC = NULL;
+	static int xBitmap;
+	static int yBitmap;
+
     switch (messg) {
+	case WM_CREATE:
+		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("black.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+		hBitmapBeginEnd = (HBITMAP)LoadImage(NULL, TEXT("azul.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+		hBitmapCar = (HBITMAP)LoadImage(NULL, TEXT("carro.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+		hBitmapFrog = (HBITMAP)LoadImage(NULL, TEXT("sapo.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+
+		GetObject(hBitmap, sizeof(bitmap), &bitmap);
+		GetObject(hBitmapBeginEnd, sizeof(bitmapBeginEnd), &bitmapBeginEnd);
+		GetObject(hBitmapCar, sizeof(bitmapCar), &bitmapCar);
+        GetObject(hBitmapFrog, sizeof(bitmapFrog), &bitmapFrog);
+
+		
+		hdc = GetDC(hWnd);
+		bitmapDC = CreateCompatibleDC(hdc);
+		bitmapBeginEndDC = CreateCompatibleDC(hdc);
+		bitmapCarDC = CreateCompatibleDC(hdc);
+		bitmapFrogDC = CreateCompatibleDC(hdc);
+		
+
+		SelectObject(bitmapDC, hBitmap);
+		SelectObject(bitmapBeginEndDC, hBitmapBeginEnd);
+		SelectObject(bitmapCarDC, hBitmapCar);
+        SelectObject(bitmapFrogDC, hBitmapFrog);
+	
+		ReleaseDC(hWnd, hdc);
+		GetClientRect(hWnd, &rect);
+		break;
+
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		GetClientRect(hWnd, &rect);
+		FillRect(hdc, &rect, CreateSolidBrush(RGB(255, 0, 0)));
+		totalPixels = 38 * data->game->columns;		// colocar colunas que le do pipe no futuro
+		xBitmap = (800 - (totalPixels / 2));
+		yBitmap = 150;
+		for (int i = 0; i < data->game->rows-1; i++) { // colocar linhas que le do pipe no futuro
+			for (int j = 0; j < data->game->columns-1; j++) {	// colocar colunas que le do pipe no futuro
+				if (i == data->game->rows-1 && i == 0) { // se estivermos na primeira/ultima coluna, pinta de azul
+					BitBlt(hdc, xBitmap, yBitmap, bitmapBeginEnd.bmWidth, bitmapBeginEnd.bmHeight, bitmapBeginEndDC, 0, 0, SRCCOPY);
+				}
+				else { //senão pinta de preto
+					BitBlt(hdc, xBitmap, yBitmap, bitmap.bmWidth, bitmap.bmHeight, bitmapDC, 0, 0, SRCCOPY);
+				}
+
+				xBitmap = xBitmap + 38;
+			}
+			xBitmap = (900 - (totalPixels / 2));
+
+			yBitmap = yBitmap + 38;
+
+		}
+		EndPaint(hWnd, &ps);
+		break;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == BTN_QUIT) {
+			data->game->isShutdown = TRUE;
+			Sleep(3000);
+			DestroyWindow(hWnd);
+		}
+
+
     case WM_DESTROY:	// Destruir a janela e terminar o programa 
                         // "PostQuitMessage(Exit Status)"		
         PostQuitMessage(0);
@@ -199,198 +331,3 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
     }
     return(0);
 }
-
-
-
-
-/*#include "framework.h"
-#include "FrogGUI.h"
-#include "frog.h"
-
-#define MAX_LOADSTRING 100
-
-// Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-
-// Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-DWORD WINAPI frogThread(LPVOID params) {
-    BOOL returnValue;
-    DWORD n;
-    pFrogData data = (pFrogData)params;
-
-    while (!data->game->isShutdown) {
-        returnValue = ReadFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-        if (!returnValue || &n == 0) {
-            break;
-        }
-        WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-    }
-    return 1;
-}
-
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    // TODO: Place code here.
-
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_FROGGUI, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
-
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_FROGGUI));
-
-    MSG msg;
-
-    // Main message loop:
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-
-    return (int) msg.wParam;
-}
-
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_FROGGUI));
-    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_FROGGUI);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
-
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
-}*/

@@ -152,6 +152,10 @@
     <ResourceCompile Include="FrogGUI.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\azul.bmp" />
+    <Image Include="..\..\..\..\..\Downloads\black.bmp" />
+    <Image Include="..\..\..\..\..\Downloads\carro.bmp" />
+    <Image Include="..\..\..\..\..\Downloads\sapo.bmp" />
     <Image Include="FrogGUI.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
