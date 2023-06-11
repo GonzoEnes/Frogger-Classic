@@ -15,7 +15,6 @@ void showGame(pGame game) {
 			_tprintf(_T("%c "), game->board[i][j]);
 		}
 	}
-
 	_tprintf(_T("\n\n"));
 }
 
@@ -28,8 +27,12 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 		ret = ReadFile(hPipeComms, game, sizeof(Game), &nBytes, NULL);
 		game->isSuspended = FALSE;
 		showGame(game);
+		_tprintf(_T("\nTEMPO JOGO: %d"), game->time);
+		_tprintf(_T("\n"));
+		Sleep(1000);
+		system("cls");
 
-		if (!ret || nBytes == 0) { // if ReadFile failed or read 0 bytes, then:
+		if (!ret || !nBytes) { // if ReadFile failed or read 0 bytes, then:
 			_tprintf(_T("\n[ERROR] Frogger game shutting down...\n"));
 			game->isShutdown = TRUE;
 			return;
@@ -37,7 +40,7 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 
 		_tprintf(_T("\nData read successfully. Starting game...\n"));
 
-		do {
+		/*do {
 			/*while (_tcscmp(opt, _T("A")) != 0 && _tcscmp(opt, _T("D")) != 0 && _tcscmp(opt, _T("W")) != 0 && _tcscmp(opt, _T("S")) != 0) {
 				_tprintf(_T("\nMove (PAUSE to pause the game): "));
 				
@@ -69,9 +72,9 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 					game->isSuspended = TRUE;
 					break;
 				}
-			}*/
+			}
 
-		} while (!game->isShutdown);
+		} while (!game->isShutdown);*/
 
 		if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
 			_tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
@@ -89,7 +92,9 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
 
 
 int _tmain(int argc, TCHAR** argv) {
+	
 	Game game;
+
 	HANDLE hPipeComms;
 
 	game.isShutdown = FALSE;
@@ -104,7 +109,7 @@ int _tmain(int argc, TCHAR** argv) {
 	(void)_setmode(_fileno(stderr), _O_WTEXT);
 #endif
 
-	_tprintf(_T("\n--------------FROG/CLIENT-------------\n"));
+	_tprintf(_T("\n--------------FROG-------------\n"));
 
 	if (!WaitNamedPipe(PIPE_NAME, NMPWAIT_WAIT_FOREVER)) {
 		_tprintf(_T("\nCan't connect to named pipe. Server isn't running. [%d]\n"), GetLastError());
@@ -133,6 +138,5 @@ int _tmain(int argc, TCHAR** argv) {
 	}
 
 	CloseHandle(hPipeComms);
-
 	return 0;
 }

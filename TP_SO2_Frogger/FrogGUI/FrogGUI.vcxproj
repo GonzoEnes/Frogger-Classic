@@ -152,11 +152,12 @@
     <ResourceCompile Include="FrogGUI.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\..\Downloads\azul.bmp" />
-    <Image Include="..\..\..\..\..\Downloads\black.bmp" />
-    <Image Include="..\..\..\..\..\Downloads\carro.bmp" />
-    <Image Include="..\..\..\..\..\Downloads\sapo.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\azul.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\black.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\carro.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\sapo.bmp" />
     <Image Include="FrogGUI.ico" />
+    <Image Include="obstaculo.bmp" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

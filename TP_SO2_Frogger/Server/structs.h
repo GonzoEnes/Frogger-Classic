@@ -23,6 +23,7 @@ struct FROG {
 	DWORD score;
 	DWORD x, y;
 	DWORD nLives;
+	BOOL hasMoved; // for when he doens't move for 10 + secs
 };
 
 struct GAME {

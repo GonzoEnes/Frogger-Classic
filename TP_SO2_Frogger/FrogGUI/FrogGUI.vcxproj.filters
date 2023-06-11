@@ -48,16 +48,19 @@
     <Image Include="FrogGUI.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Downloads\black.bmp">
+    <Image Include="..\..\..\..\..\Desktop\black.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Downloads\sapo.bmp">
+    <Image Include="..\..\..\..\..\Desktop\carro.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Downloads\carro.bmp">
+    <Image Include="..\..\..\..\..\Desktop\sapo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Downloads\azul.bmp">
+    <Image Include="..\..\..\..\..\Desktop\azul.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="obstaculo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -27,21 +27,26 @@
 // igual ao do próprio programa) "szprogName" é usado mais abaixo na definição das 
 // propriedades do objecto janela
 
-
 DWORD WINAPI frogThread(LPVOID params) {
     BOOL returnValue;
     DWORD n;
     pFrogData data = (pFrogData)params;
 
     while (!data->game->isShutdown) {
+        WaitForSingleObject(data->hMutex, INFINITE);
         returnValue = ReadFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-        _tprintf(_T("AQUI: %d\n"), data->game->rows);
-        if (!returnValue || &n == 0) {
+        if (!returnValue || !n) {
             break;
         }
+
         WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
+        
+        InvalidateRect(data->hWnd, NULL, TRUE);
+        
+        Sleep(30);
     }
-    return (1);
+
+    ReleaseMutex(data->hMutex);
 }
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
@@ -129,12 +134,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     // ============================================================================
     hWnd = CreateWindow(
         szProgName, // Nome da janela (programa) definido acima
-        TEXT("Frogger"), // Texto que figura na barra do título
+        TEXT("Frogger - SO2"), // Texto que figura na barra do título
         WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, // Estilo da janela (WS_OVERLAPPED= normal)
         CW_USEDEFAULT, // Posição x pixels (default=à direita da última)
         CW_USEDEFAULT, // Posição y pixels (default=abaixo da última)
-        1280, // Largura da janela (em pixels)
-        720, // Altura da janela (em pixels)
+        1600, // Largura da janela (em pixels)
+        800, // Altura da janela (em pixels)
         (HWND)HWND_DESKTOP, // handle da janela pai (se se criar uma a partir de
         // outra) ou HWND_DESKTOP se a janela for a primeira, 
         // criada a partir do "desktop"
@@ -156,8 +161,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
         L"BUTTON",  // Predefined class; Unicode assumed 
         L"Quit",      // Button text 
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
-        750,         // x position 
-        600,         // y position 
+        0,         // x position 
+        0,         // y position 
         100,        // Button width
         75,        // Button height
         hWnd,     // Parent window
@@ -232,102 +237,169 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 // ============================================================================
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	DWORD xPos;
-	DWORD yPos;
-	RECT rect;
-	HDC hdc;
-	pFrogData data;
+    DWORD xPos;
+    DWORD yPos;
+    RECT rect;
+    HDC hdc;
+    pFrogData data;
     PAINTSTRUCT ps;
     DWORD totalPixels = 0;
     DWORD n;
-	data = (pFrogData)GetWindowLongPtr(hWnd, 0);
+    data = (pFrogData)GetWindowLongPtr(hWnd, 0);
     static HBITMAP hBitmap;
-	static HBITMAP hBitmapBeginEnd;
-	static HBITMAP hBitmapCar;
-	static HBITMAP hBitmapFrog;
+    static HBITMAP hBitmapBeginEnd;
+    static HBITMAP hBitmapCar;
+    static HBITMAP hBitmapFrog;
+    static HBITMAP hBitmapObstacle;
     static BITMAP bitmap = { 0 };
-	static BITMAP bitmapBeginEnd = { 0 };
+    static BITMAP bitmapBeginEnd = { 0 };
     static BITMAP bitmapCar = { 0 };
-	static BITMAP bitmapFrog = { 0 };
-	static HDC bitmapDC = NULL;
-	static HDC bitmapBeginEndDC = NULL;
-	static HDC bitmapCarDC = NULL;
-	static HDC bitmapFrogDC = NULL;
-	static int xBitmap;
-	static int yBitmap;
+    static BITMAP bitmapFrog = { 0 };
+    static BITMAP bitmapObstacle = { 0 };
+    static HDC bitmapDC = NULL;
+    static HDC bitmapBeginEndDC = NULL;
+    static HDC bitmapCarDC = NULL;
+    static HDC bitmapFrogDC = NULL;
+    static HDC bitmapObstacleDC = NULL;
+    static int xBitmap;
+    static int yBitmap;
+    static int limDir;
+    static HDC memDC = NULL;
+    static int speed;
+    HANDLE hMutex;
 
     switch (messg) {
-	case WM_CREATE:
-		hBitmap = (HBITMAP)LoadImage(NULL, TEXT("black.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
-		hBitmapBeginEnd = (HBITMAP)LoadImage(NULL, TEXT("azul.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
-		hBitmapCar = (HBITMAP)LoadImage(NULL, TEXT("carro.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
-		hBitmapFrog = (HBITMAP)LoadImage(NULL, TEXT("sapo.bmp"), IMAGE_BITMAP, 38, 38, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+    case WM_CREATE:
+        hBitmap = (HBITMAP)LoadImage(NULL, TEXT("black.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+        hBitmapBeginEnd = (HBITMAP)LoadImage(NULL, TEXT("azul.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+        hBitmapCar = (HBITMAP)LoadImage(NULL, TEXT("carro.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+        hBitmapFrog = (HBITMAP)LoadImage(NULL, TEXT("sapo.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+        hBitmapObstacle = (HBITMAP)LoadImage(NULL, TEXT("obstacle.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
 
-		GetObject(hBitmap, sizeof(bitmap), &bitmap);
-		GetObject(hBitmapBeginEnd, sizeof(bitmapBeginEnd), &bitmapBeginEnd);
-		GetObject(hBitmapCar, sizeof(bitmapCar), &bitmapCar);
+        GetObject(hBitmap, sizeof(bitmap), &bitmap);
+        GetObject(hBitmapBeginEnd, sizeof(bitmapBeginEnd), &bitmapBeginEnd);
+        GetObject(hBitmapCar, sizeof(bitmapCar), &bitmapCar);
         GetObject(hBitmapFrog, sizeof(bitmapFrog), &bitmapFrog);
+        GetObject(hBitmapObstacle, sizeof(bitmapObstacle), &bitmapObstacle);
 
-		
-		hdc = GetDC(hWnd);
-		bitmapDC = CreateCompatibleDC(hdc);
-		bitmapBeginEndDC = CreateCompatibleDC(hdc);
-		bitmapCarDC = CreateCompatibleDC(hdc);
-		bitmapFrogDC = CreateCompatibleDC(hdc);
-		
+        hdc = GetDC(hWnd);
+        bitmapDC = CreateCompatibleDC(hdc);
+        bitmapBeginEndDC = CreateCompatibleDC(hdc);
+        bitmapCarDC = CreateCompatibleDC(hdc);
+        bitmapFrogDC = CreateCompatibleDC(hdc);
+        bitmapObstacleDC = CreateCompatibleDC(hdc);
 
-		SelectObject(bitmapDC, hBitmap);
-		SelectObject(bitmapBeginEndDC, hBitmapBeginEnd);
-		SelectObject(bitmapCarDC, hBitmapCar);
+
+        SelectObject(bitmapDC, hBitmap);
+        SelectObject(bitmapBeginEndDC, hBitmapBeginEnd);
+        SelectObject(bitmapCarDC, hBitmapCar);
         SelectObject(bitmapFrogDC, hBitmapFrog);
-	
-		ReleaseDC(hWnd, hdc);
-		GetClientRect(hWnd, &rect);
-		break;
+        SelectObject(bitmapObstacleDC, hBitmapObstacle);
 
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		GetClientRect(hWnd, &rect);
-		FillRect(hdc, &rect, CreateSolidBrush(RGB(255, 0, 0)));
-		totalPixels = 38 * data->game->columns;		// colocar colunas que le do pipe no futuro
-		xBitmap = (800 - (totalPixels / 2));
-		yBitmap = 150;
-		for (int i = 0; i < data->game->rows-1; i++) { // colocar linhas que le do pipe no futuro
-			for (int j = 0; j < data->game->columns-1; j++) {	// colocar colunas que le do pipe no futuro
-				if (i == data->game->rows-1 && i == 0) { // se estivermos na primeira/ultima coluna, pinta de azul
-					BitBlt(hdc, xBitmap, yBitmap, bitmapBeginEnd.bmWidth, bitmapBeginEnd.bmHeight, bitmapBeginEndDC, 0, 0, SRCCOPY);
-				}
-				else { //senão pinta de preto
-					BitBlt(hdc, xBitmap, yBitmap, bitmap.bmWidth, bitmap.bmHeight, bitmapDC, 0, 0, SRCCOPY);
-				}
-
-				xBitmap = xBitmap + 38;
-			}
-			xBitmap = (900 - (totalPixels / 2));
-
-			yBitmap = yBitmap + 38;
-
-		}
-		EndPaint(hWnd, &ps);
-		break;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == BTN_QUIT) {
-			data->game->isShutdown = TRUE;
-			Sleep(3000);
-			DestroyWindow(hWnd);
-		}
-
-
-    case WM_DESTROY:	// Destruir a janela e terminar o programa 
-                        // "PostQuitMessage(Exit Status)"		
-        PostQuitMessage(0);
+        ReleaseDC(hWnd, hdc);
+        GetClientRect(hWnd, &rect);
         break;
-    default:
-        // Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar")
-        // não é efectuado nenhum processamento, apenas se segue o "default" do Windows
-        return(DefWindowProc(hWnd, messg, wParam, lParam));
-        break;  // break tecnicamente desnecessário por causa do return
-    }
+
+    case WM_PAINT:
+        hdc = BeginPaint(hWnd, &ps);
+        GetClientRect(hWnd, &rect);
+        FillRect(hdc, &rect, CreateSolidBrush(RGB(255, 0, 0)));
+        totalPixels = 55 * data->game->columns;		// colocar colunas que le do pipe no futuro
+        xBitmap = (800 - (totalPixels / 2));
+        yBitmap = 150;
+
+        for (int i = 0; i < data->game->rows; i++) { // colocar linhas que le do pipe no futuro
+            for (int j = 0; j < data->game->columns; j++) {	// colocar colunas que le do pipe no futuro
+                if (i == data->game->rows - 1 || i == 0) { // se estivermos na primeira/ultima coluna, pinta de azul
+                    BitBlt(hdc, xBitmap, yBitmap, bitmapBeginEnd.bmWidth, bitmapBeginEnd.bmHeight, bitmapBeginEndDC, 0, 0, SRCCOPY);
+                }
+                else { //senão pinta de preto
+                    BitBlt(hdc, xBitmap, yBitmap, bitmap.bmWidth, bitmap.bmHeight, bitmapDC, 0, 0, SRCCOPY);
+                }
+
+                /*if (data->game->board[i][j] == _T('s')) {
+                    BitBlt(hdc, xBitmap, yBitmap, bitmapFrog.bmWidth, bitmapFrog.bmHeight, bitmapFrogDC, 0, 0, SRCCOPY);
+                }*/
+
+                if (i == data->game->player1.y && j == data->game->player1.x) {
+                    BitBlt(hdc, xBitmap, yBitmap, bitmapFrog.bmWidth, bitmapFrog.bmHeight, bitmapFrogDC, 0, 0, SRCCOPY);
+                }
+
+
+                else if (data->game->board[i][j] == _T('c')) {
+                    BitBlt(hdc, xBitmap, yBitmap, bitmapCar.bmWidth, bitmapCar.bmHeight, bitmapCarDC, 0, 0, SRCCOPY);
+                }
+
+                else if (data->game->board[i][j] == _T('O')) {
+                    //tratar do bitmap do obstáculo
+                }
+
+                xBitmap = xBitmap + 55;
+            }
+            xBitmap = (800 - (totalPixels / 2));
+
+            yBitmap = yBitmap + 55;
+        }
+
+        BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
+
+        EndPaint(hWnd, &ps);
+
+        break;
+
+    case WM_KEYDOWN:
+        switch (wParam) {
+        case VK_UP:
+            // Move frog up
+            data->game->player1.y--;
+            InvalidateRect(hWnd, NULL, TRUE); // Invalidate the window to trigger a repaint
+            break;
+        case VK_DOWN:
+            // Move frog down
+            data->game->player1.y++;
+            InvalidateRect(hWnd, NULL, TRUE);
+            break;
+        case VK_LEFT:
+            // Move frog left
+            data->game->player1.x--;
+            InvalidateRect(hWnd, NULL, TRUE);
+            break;
+        case VK_RIGHT:
+            // Move frog right
+            data->game->player1.x++;
+            InvalidateRect(hWnd, NULL, TRUE);
+            break;
+        }
+        break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == BTN_QUIT) {
+                data->game->isShutdown = TRUE;
+                Sleep(3000);
+                DestroyWindow(hWnd);
+            }
+        break;
+
+        case WM_CLOSE:
+            if (MessageBox(hWnd, _T("Are you sure you want to leave?"), _T("Leave"), MB_YESNO) == IDYES)
+                DestroyWindow(hWnd);
+            break;
+        case WM_DESTROY:	// Destruir a janela e terminar o programa 
+                            // "PostQuitMessage(Exit Status)"		
+            DeleteDC(memDC);
+            //DeleteObject(hBitmapBuffer);
+            DeleteObject(hBitmap);
+            DeleteObject(hBitmapBeginEnd);
+            DeleteObject(hBitmapCar);
+            DeleteObject(hBitmapFrog);
+            DeleteObject(hBitmapObstacle);
+            PostQuitMessage(0);
+            break;
+        default:
+            // Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar")
+            // não é efectuado nenhum processamento, apenas se segue o "default" do Windows
+            return(DefWindowProc(hWnd, messg, wParam, lParam));
+            break;  // break tecnicamente desnecessário por causa do return
+        }
     return(0);
 }

@@ -1,6 +1,6 @@
 ﻿  operator.c
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(274,12): warning C4013: 'time' undefined; assuming extern returning int
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(230): warning C4716: 'receiveGameData': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(292,12): warning C4013: 'time' undefined; assuming extern returning int
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Operator\operator.c(229): warning C4716: 'receiveGameData': must return a value
   Operator.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Operator.exe

@@ -100,6 +100,7 @@ BOOL createSharedMemoryAndInit(pData data) {
 }
 
 DWORD WINAPI sendCmdThread(LPVOID params) {
+	
 	pData data = (pData)params;
 
 	TCHAR* token = NULL;
@@ -212,8 +213,6 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 	return 0;
 }
 
-
-
 DWORD WINAPI receiveGameData(LPVOID params) {
 	pData data = (pData)params;
 
@@ -231,24 +230,43 @@ DWORD WINAPI receiveGameData(LPVOID params) {
 
 void showBoard(pData data) {
 	WaitForSingleObject(data->hMutex, INFINITE);
-	_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
+	if (data->game->gameType == 1) {
+		_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
 
-	_tprintf(_T("%d %d"), data->game[0].rows, data->game[0].columns);
-	for (DWORD i = 0; i < data->game[0].rows; i++)
-	{
-		_tprintf(_T("\n"));
+		_tprintf(_T("%d %d"), data->game[0].rows, data->game[0].columns);
+		for (DWORD i = 0; i < data->game[0].rows; i++)
+		{
+			_tprintf(_T("\n"));
 
-		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			_tprintf(TEXT("%c"), data->game[0].board[i][j]);
+			for (DWORD j = 0; j < data->game[0].columns; j++) {
+				_tprintf(TEXT("%c"), data->game[0].board[i][j]);
+			}
+		}
+
+		_tprintf(TEXT("\n\n"));
+	}
+	
+	else {
+		for (DWORD k = 0; k < 2; k++) {
+			_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[k].time);
+
+			_tprintf(_T("%d %d"), data->game[k].rows, data->game[k].columns);
+			for (DWORD i = 0; i < data->game[k].rows; i++)
+			{
+				_tprintf(_T("\n"));
+
+				for (DWORD j = 0; j < data->game[k].columns; j++) {
+					_tprintf(TEXT("%c"), data->game[k].board[i][j]);
+				}
+			}
+
+			_tprintf(TEXT("\n\n"));
 		}
 	}
 
-	_tprintf(TEXT("\n\n"));
 	_tprintf(_T("\nInsert cmd: "));
 	ReleaseMutex(data->hMutex);
 }
-
-
 
 VOID screenClear() {
 	system("cls");
@@ -257,11 +275,11 @@ VOID screenClear() {
 DWORD WINAPI showBoardConstant(LPVOID params) {
 	pData data = (pData)params;
 
-	while (!data->game[0].isShutdown) {
-		if (data->game[0].isShutdown) {
+	while (!data->game->isShutdown) {
+		if (data->game->isShutdown) {
 			break;
 		}
-		Sleep(4000);
+		Sleep(1000);
 		screenClear();
 		showBoard(data);
 	}
@@ -276,9 +294,11 @@ int _tmain(TCHAR** argv, int argc) {
 	HANDLE receiveGameInfoThread;
 	HANDLE hPermaShowBoard;
 	Data data;
-	Game game[2] = { 0 };
+	Game game[2] = {0};
 	data.game[0] = game[0];
 	data.game[1] = game[1];
+
+	data.game->isShutdown = FALSE;
 	
 	
 	// vars de struct de sharedMM
@@ -320,7 +340,7 @@ int _tmain(TCHAR** argv, int argc) {
 	} // comentada por agora porque senão está sempre a dar sleep e não recebe info nenhuma, corrigir isso depois
 
 	while (1) { // always verify for game state
-		if (data.game[0].isShutdown) {
+		if (data.game->isShutdown) {
 			_tprintf(_T("\nGAME SHUTTING DOWN...\n"));
 			break;
 		}
@@ -335,6 +355,6 @@ int _tmain(TCHAR** argv, int argc) {
 	CloseHandle(data.hFileMapMemory);
 	CloseHandle(data.hMutex);
 	CloseHandle(data.hReadSem);
-	
+	Sleep(1000);
 	return 0;
 }

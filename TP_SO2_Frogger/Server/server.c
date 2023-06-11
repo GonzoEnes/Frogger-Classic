@@ -7,6 +7,34 @@
 #include <time.h>
 #include "structs.h"
 
+void showBoard(pData data) {
+	WaitForSingleObject(data->hMutex, INFINITE);
+	if (data->game[0].gameType == 1) {
+		_tprintf(TEXT("\n\nTime: [%d]\n\n"), data->game[0].time);
+		for (DWORD i = 0; i < data->game[0].rows; i++)
+		{
+			_tprintf(TEXT("\n"));
+			for (DWORD j = 0; j < data->game[0].columns; j++)
+				_tprintf(TEXT("%c "), data->game[0].board[i][j]);
+		}
+		_tprintf(TEXT("\n\n"));
+	}
+	else {
+		for (DWORD i = 0; i < 2; i++) {
+			for (DWORD j = 0; j < data->game[i].rows; j++)
+			{
+				_tprintf(TEXT("\n"));
+
+				for (DWORD k = 0; k < data->game[i].columns; k++)
+
+					_tprintf(TEXT("%c "), data->game[i].board[j][k]);
+			}
+			_tprintf(TEXT("\n\n"));
+		}
+	}
+	ReleaseMutex(data->hMutex);
+}
+
 BOOL createSharedMemoryAndInit(pData p) {
 	BOOL firstProcess = FALSE;
 	_tprintf(TEXT("\n\nConfigs for the game initializing...\n"));
@@ -134,10 +162,14 @@ void initBoard(pData data) {
 
 	for (DWORD i = 0; i < data->game[0].rows; i++) {
 		for (DWORD j = 0; j < data->game[0].columns; j++) {
-			
-			data->game[0].board[i][j] = _T('-');
-			// ver melhor
-			//_tcscpy_s(&data->game[0].board[i][j], sizeof(TCHAR), _T("-")); // perguntar ao prof
+			if (data->game[0].gameType == 1) {
+				data->game[0].board[i][j] = _T('-');
+			}
+			else {
+				for (DWORD k = 0; k < 2; k++) {
+					data->game[k].board[i][j] = _T('-');
+				}
+			}
 		}
 	}
 }
@@ -159,7 +191,7 @@ DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM
 					data->game[0].player1.y = i;
 					data->game[0].player1.x = 10;
 					data->game[0].nFrogs++;
-					_tprintf(TEXT("\n o sapo ta aqui %d %d  \n"), data->game[0].player1.y, data->game[0].player1.x);
+					_tprintf(TEXT("\n o sapo ta aqui %d %d\n"), data->game[0].player1.y, data->game[0].player1.x);
 					return 1;
 				}
 			}
@@ -174,7 +206,7 @@ void insertCars(pData data) {
 	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
 
 	if (data->game[0].nCars == 0) {
-		_tprintf(TEXT("\nImprimiu 0 carros :)\n"));
+		_tprintf(TEXT("\nImprimiu 0 carros.\n"));
 		return;
 	}
 
@@ -200,9 +232,9 @@ void insertCars(pData data) {
 	}
 }
 
-
 DWORD stopCars(pData data, INT time) {
-	if (data->game[0].isMoving == FALSE) {
+	
+	if (data->game->isMoving == FALSE) {
 		_tprintf(_T("\nCars are already stopped. Wait for a few seconds and try again.\n"));
 		return -2;
 	}
@@ -213,16 +245,27 @@ DWORD stopCars(pData data, INT time) {
 	}
 
 	_tprintf(_T("\nStopping cars for %d seconds.\n"), time);
+	
 
-	if (data->game[0].nCars == 0) {
+
+	if (data->game->nCars == 0) {
 		_tprintf(_T("\nNo cars to stop.\n"));
 		return -2;
 	}
 
 	while (time > 0) {
-		data->game->isMoving = FALSE;
-		time--;
-		Sleep(1000);
+		if (data->game->gameType == 1) {
+			data->game[0].isMoving = FALSE;
+			time--;
+			Sleep(1000);
+		}
+		else {
+			for (DWORD i = 0; i < 2; i++){
+				data->game[i].isMoving = FALSE;
+				time--;
+				Sleep(1000);
+			}
+		}
 	}
 
 	//when time runs out
@@ -237,12 +280,12 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 
 	TCHAR obstacle = _T('O'); // ver melhor
 
-	if (row == 0 || row == data->game[0].rows-1) {
+	if (row == 0 || row == data->game->rows-1) {
 		_tprintf(_T("\nCan't insert obstacle in starting/finish line.\n"));
 		return -2;
 	}
 
-	if (column > data->game[0].columns - 1 || row > data->game[0].rows - 1 || column < 0 || row < 0) {
+	if (column > data->game->columns - 1 || row > data->game->rows - 1 || column < 0 || row < 0) {
 		_tprintf(_T("\nTrying to insert obstacle out of bounds.\n"));
 		return -3;
 	}
@@ -256,12 +299,30 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 	_tprintf(_T("\nInserting obstacle at position X: %d and Y: %d"), row, column);
 
 	WaitForSingleObject(data->hMutex, INFINITE);
+
+	if (data->game->gameType == 1) {
+		data->game[0].board[row][column] = obstacle; // insert obstacle in
+	}
 	
-	data->game[0].board[row][column] = obstacle; // insert obstacle in 
+	else {
+		for (DWORD i = 0; i < 2; i++) {
+			data->game[i].board[row][column] = obstacle;
+		}
+	}
 
 	ReleaseMutex(data->hMutex);
 	
 	return 1;
+}
+
+BOOLEAN checkAllCollisions(pData data) {
+	for (DWORD i = 0; i < data->game->rows - 1; i++) {
+		for (DWORD j = 0; j < data->game->columns - 1; j++) {
+			if (data->game->board[i][j] == _T('s') && data->game->board[i][j] == _T('c')) {
+				return TRUE;
+			}
+		}
+	}
 }
 
 BOOLEAN checkFrogSide(pData data) {
@@ -269,12 +330,13 @@ BOOLEAN checkFrogSide(pData data) {
 		
 	return data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('c') || data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('O');
 }
-	
+
+
 BOOL moveFrog(pData data) {
-	
+
 	for (DWORD i = data->game[0].rows - 1; i > 0; i--) {
 		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
-			if (i == data->game[0].player1.y && j== data->game[0].player1.x) {
+			if (i == data->game[0].player1.y && j == data->game[0].player1.x) {
 				if (!checkFrogSide(data)) {
 					data->game[0].board[i - 1][j] = _T('s');
 
@@ -283,19 +345,19 @@ BOOL moveFrog(pData data) {
 					}
 					data->game[0].player1.x = j;
 					data->game[0].player1.y = i - 1;
-					Sleep(4000);	
+					Sleep(4000);
 				}
 				else {
 					// check para as vidas. parar de spwanar sapos se vidas = 0
 					data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] = _T('-');
 					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
-					data->game[0].player1.y = data->game[0].rows-1;
+					data->game[0].player1.y = data->game[0].rows - 1;
 					data->game[0].player1.x = 10;
 					Sleep(4000);
 				}
 				return FALSE;
 			}
-			
+
 		}
 	}
 	if (data->game[0].player1.y == 0) {
@@ -404,20 +466,35 @@ BOOL moveCars(pData data) {
 
 
 DWORD changeDirection(pData data) {
-	if (data->game[0].nCars == 0) {
+	if (data->game->nCars == 0) {
 		_tprintf(_T("\nNo cars to change direction!\n"));
 		return -1;
 	}
 
-	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game[0].nCars);
+	_tprintf(_T("\nChanging direction of %d cars.\n"), data->game->nCars);
 
-	if (data->game[0].direction == FALSE) {
-		data->game[0].direction = TRUE; // andar para a direita
+	if (data->game->direction == FALSE) {
+		if (data->game->gameType == 1) {
+			data->game[0].direction = TRUE; // andar para a direita
+		}
+		else {
+			for (DWORD i = 0; i < 2; i++) {
+				data->game[i].direction = TRUE;
+			}
+		}
+		
 		_tprintf(_T("\nDirections changed from RIGHT - LEFT to LEFT - RIGHT\n"));
 		return 1;
 	}
 
-	data->game[0].direction = FALSE;
+	if (data->game->gameType == 1) {
+		data->game[0].direction = FALSE; // andar para a direita
+	}
+	else {
+		for (DWORD i = 0; i < 2; i++) {
+			data->game[i].direction = FALSE;
+		}
+	}
 	_tprintf(_T("\nDirections changed from LEFT - RIGHT to RIGHT - LEFT\n"));
 	return 1;
 }
@@ -425,14 +502,15 @@ DWORD changeDirection(pData data) {
 DWORD WINAPI decreaseTime(LPVOID params) {
 	pData data = (pData)params;
 
-	while (!data->game[0].isShutdown && !data->game[0].isSuspended) {
+	while (!data->game->isShutdown && !data->game->isSuspended) {
 		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
-			Sleep(4000);
+			showBoard(data);
+			Sleep(1000);
 			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
 		}
 		else if (data->time == 0) {
-			data->game[0].isShutdown = TRUE;
+			data->game->isShutdown = TRUE;
 			return 1;
 		}
 	}
@@ -447,7 +525,7 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 	int i = 0;
 
 	do {
-		if (data->game[0].isSuspended == FALSE) {
+		if (data->game->isSuspended == FALSE) {
 			WaitForSingleObject(data->hCmdEvent, INFINITE);
 			WaitForSingleObject(data->mutexCmd, INFINITE);
 
@@ -475,23 +553,31 @@ DWORD WINAPI receiveCmdFromOperator(LPVOID params) {
 				changeDirection(data);
 			}
 		}
-	} while (data->game[0].isShutdown != TRUE);
+	} while (data->game->isShutdown != TRUE);
 
 	return 0;
 }
 
 DWORD WINAPI sendGameData(LPVOID params) {
+
 	pData data = (pData)params;
 
-	while (!data->game[0].isShutdown) {
+	while (!data->game->isShutdown) {
 		WaitForSingleObject(data->hWriteSem, INFINITE);
 		WaitForSingleObject(data->hMutex, INFINITE);
 
-		// check for multiplayer na prox meta, para já copiar apenas os dados
+		if (data->game->gameType == 1) {
+			data->game[0].time = data->time;
+			CopyMemory(&data->sharedMemGame->game[0], &data->game[0], sizeof(Game)); // copia para dentro da shmMem para depois o op ler
+		}
 
-		data->game[0].time = data->time;
-
-		CopyMemory(&data->sharedMemGame->game[0], &data->game[0], sizeof(Game)); // copia para dentro da shmMem para depois o op ler
+		else {
+			for (DWORD i = 0; i < 2; i++) {
+				data->game[0].time = data->time;
+				CopyMemory(&data->sharedMemGame->game[i], &data->game[i], sizeof(Game));
+			}
+			
+		}
 
 		ReleaseMutex(data->hMutex);
 		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui é o sem de escrita porque vai escrever para dentro do pointer da shmMem
@@ -527,14 +613,30 @@ BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 					return FALSE;
 				}
 
-				DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
-				DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
+				if (data->game[0].gameType == 1) {
+					DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[0].rows, &size);
+					DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[0].carSpeed, &size);
 
-				if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
-					_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
-					return FALSE;
+					if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
+						_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
+						return FALSE;
+					}
+					return TRUE;
+
 				}
-				return TRUE;
+
+				else {
+					for (DWORD i = 0; i < 2; i++) {
+						DWORD readLanes = RegQueryValueEx(reg->key, _T("Lanes"), NULL, NULL, (LPBYTE)&data->game[i].rows, &size);
+						DWORD readSpeed = RegQueryValueEx(reg->key, _T("Speed"), NULL, NULL, (LPBYTE)&data->game[i].carSpeed, &size);
+
+						if (readLanes != ERROR_SUCCESS || readSpeed != ERROR_SUCCESS) {
+							_tprintf(_T("\n[ERROR] Can't read values from Registry.\n"));
+							return FALSE;
+						}
+						return TRUE;
+					}
+				}
 			}
 
 			// ele só entra aqui se os args forem 0, ou seja,
@@ -552,7 +654,6 @@ BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 				_tprintf(_T("\nCan't set values for Frogger.\n"));
 				return FALSE;
 			}
-
 		}
 		else {
 			_tprintf(TEXT("\nCouldn't create key in SOFTWARE\\TP_SO2.\n"));
@@ -597,19 +698,23 @@ BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 		return FALSE;
 	}
 
+
+	RegCloseKey(reg->key);
 	return TRUE;
 }
 
 void startgame(pData data) {
 	data->game[0].isShutdown = FALSE;
-	//data->game[1].isShutdown = FALSE;
+	data->game[1].isShutdown = FALSE;
 	data->game[0].isSuspended = FALSE;
-	//data->game[1].isSuspended = FALSE;
+	data->game[1].isSuspended = FALSE;
+	data->game[0].player1.hasMoved = FALSE;
 	data->time = 100;
 	data->game[0].isMoving = TRUE;
 	data->game[0].columns = (DWORD)20;
+	data->game[0].gameType = 1;
 	data->game[0].direction = TRUE;
-	//data->game[1].columns = (DWORD)20;
+	data->game[1].columns = (DWORD)20;
 	data->game[0].nFrogs = 0;
 	// check for gametype
 	data->game[0].player1.nLives = 3;
@@ -639,22 +744,41 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				Sleep(200);
 				continue;
 			}*/
+
+			if (data->game[0].player1.hasMoved == FALSE) { // se não se moveu mais que 10 secs en~tao volta para o start
+				if (data->game[0].time % 10 == 0) {
+					data->game[0].player1.x = 10;
+					data->game[0].player1.y = data->game[0].rows - 1;
+				}
+			}
 			
 			if (data->game[0].nFrogs == 0) {
 				_tprintf(_T("\n[NAO HA SAPOS].\n"));
 				end = TRUE;
+				Sleep(200);
 				continue;
 			}
 			
 			moveCars(data);
 
-			if (moveFrog(data)) { // ganhou o jogo ISTO É Sò PARA DEBUG, NÃO VAI ESTAR DENTO DUMA THREAAD
-				win = TRUE;
-				end = TRUE;
-				data->game[0].player1.score += 100;
+			/*if (checkAllCollisions(data)) { // ganhou o jogo ISTO É SÓ PARA DEBUG, NÃO VAI ESTAR DENTRO DUMA THREAD
+				//data->game[0].player1.hasMoved = TRUE;
+				//win = TRUE;
+				//data->game[0].player1.score += 100;
+				data->game[0].player1.x = 10;
+				data->game[0].player1.y = data->game[0].rows - 1;
+				data->game[0].player1.nLives--;
+
+				if (data->game[0].player1.nLives == 0) {
+					end = TRUE;
+					continue;
+				}
+
+				_tprintf(_T("\nPlayer1 está agora com um score de [%d] e [%d] vidas!"), data->game[0].player1.score, data->game[0].player1.nLives);
 				Sleep(200);
+				end = TRUE;
 				continue;
-			}
+			}*/
 			
 
 			if (data->game[0].time == 0 && data->game[0].player1.y != 0) { // se o tempo for 0 e não chegou à meta então
@@ -667,7 +791,14 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					// e não end = TRUE;
 				}
 				end = TRUE;
+				Sleep(200);
 				continue;
+			}
+
+			if (data->game[0].player1.y == 0) {
+				win = TRUE;
+				end = TRUE;
+				data->game[0].player1.score += 100;
 			}
 		}
 	}
@@ -682,27 +813,31 @@ DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
 DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 	DWORD n;
 	BOOL returnValue;
-	int num;
 
 	pData data = (pData)params;
 
-	while (!data->game[0].isShutdown) {
-		for (DWORD i = 0; i < NUM; i++) {
-			WaitForSingleObject(data->threadData->hPipeMutex, INFINITE);
+	 do{
+		 for (DWORD i = 0; i < NUM; i++) {
+			 WaitForSingleObject(data->threadData->hPipeMutex, INFINITE);
 
-			if (data->threadData->hPipe[i].active) {
-				if (!WriteFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL)) {
-					_tprintf(_T("\nError writing on frog pipe.\n"));
-					data->game[0].isShutdown = TRUE;
-				}
-				else {
-					returnValue = ReadFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL);
-					data->game->board[data->game->player1.y][data->game->player1.x] = _T('s'); // é a jogada que vai fazer
-				}
-			}
-			ReleaseMutex(data->threadData->hPipeMutex);
-		}
-	}
+			 if (data->threadData->hPipe[i].active) {
+				 if (!WriteFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL)) {
+					 _tprintf(_T("\nError writing on frog pipe.\n"));
+					 data->game[0].isShutdown = TRUE;
+				 }
+				 else {
+					 returnValue = ReadFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL);
+					 if (!returnValue || !n) {
+						 _tprintf(_T("\nError reading from pipe!\n"));
+						 break;
+					 }
+					 data->game[0].board[data->game->player1.y][data->game->player1.x] = _T('s'); // é a jogada que vai fazer
+				 }
+			 }
+			 ReleaseMutex(data->threadData->hPipeMutex);
+		 }
+
+	 } while (!data->game[0].isShutdown);
 
 	data->threadData->end = 1;
 
@@ -710,7 +845,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 		SetEvent(data->threadData->hEvents[i]);
 	}
 
-	return 1;
+	return 0;
 }
 
 int _tmain(int argc, TCHAR** argv) {
@@ -722,15 +857,19 @@ int _tmain(int argc, TCHAR** argv) {
 	HANDLE hPipe;
 	HANDLE hPipeThread;
 	HANDLE hSinglePlayerThread;
-	//HANDLE hMultiPlayerThread;
+	HANDLE hMultiPlayerThread;
 	
 	Game game[2] = { 0 };
+
+	TCHAR opt[256];
 	
 	RegConfig reg = {0};
+
+	DWORD gameType = 0;
 	
 	ThreadData threadData = { 0 };
 	
-	Data data;
+	Data data = {0};
 
 	DWORD nBytes; // for pipe read/writes
 
@@ -739,6 +878,10 @@ int _tmain(int argc, TCHAR** argv) {
 	data.game[0] = game[0];
 	
 	data.game[1] = game[1];
+
+	data.game->isShutdown = FALSE;
+
+	data.game->isSuspended = FALSE;
 
 	DWORD nClients = 0, num;
 	
@@ -753,6 +896,20 @@ int _tmain(int argc, TCHAR** argv) {
 	if (!createSharedMemoryAndInit(&data)) {
 		_tprintf(_T("\nCan't create shared memory.\n"));
 		return 0;
+	}
+
+	while (gameType < 1 || gameType > 2) {
+		_tprintf(_T("\nWhat type of configuration do you want?\n\n1 - Singleplayer\n2 - Multiplayer\n\nOption: "));
+		_fgetts(opt, 256, stdin);
+		if (_tcslen(opt) == 2)
+			gameType = _ttoi(opt);
+	}
+
+	if (gameType == 1)
+		data.game[0].gameType = gameType;
+	else {
+		data.game[0].gameType = gameType;
+		data.game[1].gameType = gameType;
 	}
 
 	if (!readRegConfigs(&data, &reg, argc, argv)) {
@@ -772,11 +929,10 @@ int _tmain(int argc, TCHAR** argv) {
 
 	if (data.threadData->hPipeMutex == NULL) {
 		_tprintf(_T("\nError creating PIPE_MUTEX. [%d]"), GetLastError());
-		return -20;
+		exit(-100);
 	}
 
-	startgame(&data);
-	//Sleep(5000);
+	//startgame(&data);
 
 	for (DWORD i = 0; i < NUM; i++) {
 		_tprintf(_T("\nServer creating pipe: '%s'...\n"), PIPE_NAME);
@@ -788,7 +944,7 @@ int _tmain(int argc, TCHAR** argv) {
 			exit(-20);
 		}
 
-		hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_WAIT | PIPE_TYPE_MESSAGE, NUM, sizeof(Game), sizeof(Game), 1000, NULL);
+		hPipe = CreateNamedPipe(PIPE_NAME, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE, NUM, sizeof(Game), sizeof(Game), 1000, NULL);
 
 		if (hPipe == INVALID_HANDLE_VALUE) {
 			_tprintf(_T("\nError creating named pipe. [%d]"), GetLastError());
@@ -799,7 +955,6 @@ int _tmain(int argc, TCHAR** argv) {
 		
 		data.threadData->hPipe[i].hInstance = hPipe;
 		data.threadData->hPipe[i].overlap.hEvent = hTempEvent;
-
 		data.threadData->hEvents[i] = hTempEvent;
 		data.threadData->hPipe[i].active = FALSE;
 
@@ -810,11 +965,14 @@ int _tmain(int argc, TCHAR** argv) {
 	}
 
 	hPipeThread = CreateThread(NULL, 0, pipeReadAndWriteThread, &data, 0, NULL);
-
 	if (hPipeThread == NULL) {
 		_tprintf(_T("\nError creating pipe thread! [%d]"), GetLastError());
 		exit(-100);
 	}
+
+	startgame(&data);
+
+	_tprintf(_T("\nCriei a thread dos pipes!\n"));
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
@@ -835,24 +993,34 @@ int _tmain(int argc, TCHAR** argv) {
 	}
 
 	hSinglePlayerThread = CreateThread(NULL, 0, threadFroggerSinglePlayer, &data, 0, NULL);
-
 	if (hSinglePlayerThread == NULL) {
 		_tprintf(_T("\nCan't create SINGLEPLAYERTHREAD [%d]"), GetLastError());
 		return -2;
 	}
 
+	if (data.game[0].gameType == 2) {
+		hMultiPlayerThread = CreateThread(NULL, 0, threadFroggerMultiPlayer, &data, 0, NULL);
+
+		if (hMultiPlayerThread == NULL) {
+			_tprintf(_T("\nCan't create MULTIPLAYER THREAD [%d]"), GetLastError());
+			exit(-190);
+		}
+	}
+
 	while ((!data.game[0].isShutdown || !data.game[1].isShutdown) && nClients < NUM + 1) {
-		DWORD result = WaitForMultipleObjects(NUM, threadData.hEvents, FALSE, 1000);
+		DWORD result = WaitForMultipleObjects(NUM, data.threadData->hEvents, FALSE, 1000);
 		num = result - WAIT_OBJECT_0;
 		if (num >= 0 && num < NUM) {
 			_tprintf(_T("\nFrog connected...\n"));
 			if (data.game[0].gameType == 1) {
-				if (!data.game[0].suspended)
+				if (!data.game[0].suspended) {
 					ResumeThread(hDecreaseTimerThread);
+				}
 			}
 			else {
-				if (data.game[0].suspended == FALSE && nClients == 1)
+				if (data.game[0].suspended == FALSE && nClients == 1) {
 					ResumeThread(hDecreaseTimerThread);
+				}
 			}
 			if (GetOverlappedResult(data.threadData->hPipe[num].hInstance, &data.threadData->hPipe[num].overlap, &nBytes, FALSE)) {
 				ResetEvent(data.threadData->hEvents[num]);
@@ -873,22 +1041,28 @@ int _tmain(int argc, TCHAR** argv) {
 		CloseHandle(data.threadData->hPipe[num].hInstance);
 	}
 
-	/*if (data.game[0].gameType == 2) { // if it's multiplayer
-		_tprintf(_T("\nCan't create MULTIPLAYERTHREAD.\n [%d]"), GetLastError());
-		return -3;
-	}*/
 
-	WaitForSingleObject(hReceiveCmdThread, INFINITE);
-	WaitForSingleObject(hSendGameDataThread, INFINITE);
-	WaitForSingleObject(hDecreaseTimerThread, INFINITE);
-	WaitForSingleObject(hSinglePlayerThread, INFINITE);
-	//WaitForSingleObject(hMultiPlayerThread, INFINITE);
-	RegCloseKey(reg.key);
+	WaitForMultipleObjects(5, hReceiveCmdThread, hDecreaseTimerThread, hSendGameDataThread, hSinglePlayerThread, hPipeThread, TRUE, 2000);
+
+
+	//RegCloseKey(reg.key);
+	UnmapViewOfFile(data.sharedMemGame);
+	UnmapViewOfFile(data.sharedMemCmd);
+
 	CloseHandle(hReceiveCmdThread);
 	CloseHandle(hDecreaseTimerThread);
 	CloseHandle(hSendGameDataThread);
 	CloseHandle(hSinglePlayerThread);
+	CloseHandle(hPipeThread);
+	CloseHandle(data.mutexCmd);
+	CloseHandle(data.hCmdEvent);
+	CloseHandle(data.hFileMapFrogger);
+	CloseHandle(data.hFileMapMemory);
+	CloseHandle(data.hMutex);
+	CloseHandle(data.hWriteSem);
+	CloseHandle(data.hReadSem);
+	//WaitForSingleObject(hMultiPlayerThread, INFINITE);
 	//CloseHandle(hMultiPlayerThread);
-	
+	Sleep(2000);
 	return 0;
 }
