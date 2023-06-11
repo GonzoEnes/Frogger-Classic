@@ -29,6 +29,7 @@
 
 DWORD WINAPI frogThread(LPVOID params) {
     BOOL returnValue;
+    BOOL returnValueWrite;
     DWORD n;
     pFrogData data = (pFrogData)params;
 
@@ -39,14 +40,18 @@ DWORD WINAPI frogThread(LPVOID params) {
             break;
         }
 
-        WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-        
-        InvalidateRect(data->hWnd, NULL, TRUE);
-        
         Sleep(30);
+
+        /*returnValueWrite = WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
+        if (!returnValueWrite || !n) {
+            break;
+        }
+        //InvalidateRect(data->hWnd, NULL, TRUE);
+        Sleep(30);*/
     }
 
-    ReleaseMutex(data->hMutex);
+     ReleaseMutex(data->hMutex);
+     return (1);
 }
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
@@ -74,6 +79,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     Game game;
     FrogData data;
     HANDLE hFroggerThread;
+    HANDLE hMutex;
+
+    hMutex = CreateMutex(NULL, FALSE, NULL);
+
+    data.hMutex = hMutex;
 
     game.isShutdown = FALSE;
     game.isSuspended = FALSE;
@@ -342,17 +352,20 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
         }
 
         BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
-
         EndPaint(hWnd, &ps);
-
         break;
 
     case WM_KEYDOWN:
         switch (wParam) {
         case VK_UP:
             // Move frog up
+            //hdc = GetDC(hWnd);
             data->game->player1.y--;
+            //data->game->nCars = 0;
+            //MessageBox(hWnd, TEXT("Movi - me"), TEXT("BOAS"), MB_OK | MB_ICONEXCLAMATION);
+            WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
             InvalidateRect(hWnd, NULL, TRUE); // Invalidate the window to trigger a repaint
+            ReleaseDC(hWnd, hdc);
             break;
         case VK_DOWN:
             // Move frog down
@@ -379,7 +392,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
                 DestroyWindow(hWnd);
             }
         break;
-
         case WM_CLOSE:
             if (MessageBox(hWnd, _T("Are you sure you want to leave?"), _T("Leave"), MB_YESNO) == IDYES)
                 DestroyWindow(hWnd);

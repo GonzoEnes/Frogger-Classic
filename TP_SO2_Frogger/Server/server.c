@@ -176,9 +176,17 @@ void initBoard(pData data) {
 
 DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM FROG
 	DWORD aux;
+	if (data->game->gameType == 1) {
+		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+		data->game->nFrogs++;
+		return 1;
+	}
 
-	for (DWORD i = 0; i < data->game[0].rows; i++) { //mudar depois
-		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
+	// meter dois sapos lado a lado, ver isso
+	
+
+	/*for (DWORD i = 0; i < data->game->rows; i++) { //mudar depois
+		for (DWORD j = 0; j < data->game->columns - 1; j++) {
 
 			//data->game[0].board[2][10] = _T('s');
 			//data->game[0].nFrogs++;
@@ -196,13 +204,15 @@ DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM
 				}
 			}
 		}
-	}
+	}*/
 }
 
 void insertCars(pData data) {
+	
 	DWORD count = 0;
 	
-	data->game[0].nCars = 24;//rand() % (data->game[0].rows - 2) * 8;
+	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
+	
 	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
 
 	if (data->game[0].nCars == 0) {
@@ -331,12 +341,20 @@ BOOLEAN checkFrogSide(pData data) {
 	return data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('c') || data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x] == _T('O');
 }
 
-
 BOOL moveFrog(pData data) {
+	/*if (data->game->player1.y < data->game->rows - 1 && data->game->player1.x <  data->game->columns - 1) {
+		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+		return TRUE;
+	}
 
-	for (DWORD i = data->game[0].rows - 1; i > 0; i--) {
-		for (DWORD j = 0; j < data->game[0].columns - 1; j++) {
-			if (i == data->game[0].player1.y && j == data->game[0].player1.x) {
+	return FALSE;*/
+	
+
+	/*for (DWORD i = data->game->rows - 1; i > 0; i--) {
+		for (DWORD j = 0; j < data->game->columns - 1; j++) {
+			if (i == data->game->player1.y && j == data->game->player1.x) {
+				//data->game->board[i][j] = ;
+
 				if (!checkFrogSide(data)) {
 					data->game[0].board[i - 1][j] = _T('s');
 
@@ -345,26 +363,27 @@ BOOL moveFrog(pData data) {
 					}
 					data->game[0].player1.x = j;
 					data->game[0].player1.y = i - 1;
-					Sleep(4000);
+					Sleep(1000);
+					
 				}
 				else {
-					// check para as vidas. parar de spwanar sapos se vidas = 0
+					// check para as vidas. parar de spawnar sapos se vidas = 0
 					data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] = _T('-');
 					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
 					data->game[0].player1.y = data->game[0].rows - 1;
 					data->game[0].player1.x = 10;
-					Sleep(4000);
+					Sleep(1000);
 				}
 				return FALSE;
 			}
-
 		}
 	}
 	if (data->game[0].player1.y == 0) {
 		_tprintf(_T("\nCheguei à meta.\n"));
 		return TRUE;
 	}
-	return FALSE;
+	return FALSE;*/
+
 }
 
 	
@@ -421,7 +440,7 @@ BOOL moveCars(pData data) {
 					if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
 						TCHAR prevElement = data->game[0].board[i][j - 1];
 						if (data->game[0].board[i][j + 1] == _T('O')) {
-							_tprintf(_T("\nEntrei aqui oaodasopidawoidj\n"));
+							//_tprintf(_T("\nEntrei aqui oaodasopidawoidj\n"));
 							data->game[0].board[i][j + 1] = _T('O');
 							data->game[0].board[i][j] = prevElement;
 							continue;
@@ -505,9 +524,9 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 	while (!data->game->isShutdown && !data->game->isSuspended) {
 		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
+			moveCars(data);
 			showBoard(data);
 			Sleep(1000);
-			_tprintf(_T("\n[%d] seconds remaining!\n"), data->time);
 		}
 		else if (data->time == 0) {
 			data->game->isShutdown = TRUE;
@@ -576,9 +595,7 @@ DWORD WINAPI sendGameData(LPVOID params) {
 				data->game[0].time = data->time;
 				CopyMemory(&data->sharedMemGame->game[i], &data->game[i], sizeof(Game));
 			}
-			
 		}
-
 		ReleaseMutex(data->hMutex);
 		ReleaseSemaphore(data->hWriteSem, 1, NULL); // aqui é o sem de escrita porque vai escrever para dentro do pointer da shmMem
 	}
@@ -698,7 +715,6 @@ BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 		return FALSE;
 	}
 
-
 	RegCloseKey(reg->key);
 	return TRUE;
 }
@@ -708,11 +724,12 @@ void startgame(pData data) {
 	data->game[1].isShutdown = FALSE;
 	data->game[0].isSuspended = FALSE;
 	data->game[1].isSuspended = FALSE;
-	data->game[0].player1.hasMoved = FALSE;
+	//data->game[0].player1.hasMoved = FALSE;
 	data->time = 100;
 	data->game[0].isMoving = TRUE;
+	data->game[1].isMoving = TRUE;
 	data->game[0].columns = (DWORD)20;
-	data->game[0].gameType = 1;
+	//data->game[0].gameType = 1;
 	data->game[0].direction = TRUE;
 	data->game[1].columns = (DWORD)20;
 	data->game[0].nFrogs = 0;
@@ -720,7 +737,7 @@ void startgame(pData data) {
 	data->game[0].player1.nLives = 3;
 	data->game[0].player1.score = 0;
 	data->game[0].player1.x = 10;
-	data->game[0].player1.y = 0;
+	data->game[0].player1.y = data->game->rows-1;
 
 	initBoard(data);
 	insertCars(data);
@@ -728,15 +745,50 @@ void startgame(pData data) {
 }
 
 DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
-
 	pData data = (pData)params;
 	BOOL win = FALSE;
 	BOOL end = FALSE;
-	//BOOL begin = FALSE;
+	while (!end) {
+		end = TRUE;
+		//moveFrog(data);
 
-	while (!end) { 
+		/*if (checkAllCollisions(data)) {
+			end = TRUE;
+			Sleep(200);
+			continue;
+		}*/
+	}
+	
+	return 1;
+
+	/*while (!end) {
 		// enquanto o jogo não acabou
-		if (!data->game[0].isSuspended) { // e não está suspenso/ver do tempo
+		if (!data->game[0].isSuspended) { 
+		// e não está suspenso/ver do tempo
+			if (data->game[0].time == 0 && data->game[0].player1.y != 0) { // se o tempo for 0 e não chegou à meta então
+				if (data->game[0].player1.nLives != 0) {
+					data->game[0].player1.nLives--;
+					//data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
+					data->game[0].player1.x = 10;
+					data->game[0].player1.y = data->game[0].rows - 1;
+					Sleep(200);
+					continue;
+					// e não end = TRUE;
+				}
+				end = TRUE;
+				Sleep(200);
+				continue;
+			}
+
+			if (data->game[0].nFrogs == 0) {
+				_tprintf(_T("\n[NAO HA SAPOS].\n"));
+				end = TRUE;
+				Sleep(200);
+				continue;
+			}
+
+			//moveCars(data);
+
 			/*if (data->game[0].board[0] == _T('s')) { // ver isto melhor depois (isto é a lógica do sapo estar na meta == ganha jogo)
 				data->game[0].playerScore += 100; // quando chega à meta ganha 100 pontos
 				win = TRUE;
@@ -745,23 +797,33 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				continue;
 			}*/
 
-			if (data->game[0].player1.hasMoved == FALSE) { // se não se moveu mais que 10 secs en~tao volta para o start
+
+
+			/*if (data->game[0].player1.hasMoved == FALSE) { // se não se moveu mais que 10 secs en~tao volta para o start
 				if (data->game[0].time % 10 == 0) {
 					data->game[0].player1.x = 10;
 					data->game[0].player1.y = data->game[0].rows - 1;
 				}
-			}
-			
-			if (data->game[0].nFrogs == 0) {
-				_tprintf(_T("\n[NAO HA SAPOS].\n"));
+			}*/
+
+			/*if (moveFrog(data)) {
+				win = TRUE;
 				end = TRUE;
 				Sleep(200);
 				continue;
-			}
-			
-			moveCars(data);
+			}*/
 
-			/*if (checkAllCollisions(data)) { // ganhou o jogo ISTO É SÓ PARA DEBUG, NÃO VAI ESTAR DENTRO DUMA THREAD
+			// DHIAHDU
+
+			/*if (checkFrogSide(data)) {
+				data->game[0].player1.x = 10;
+				data->game[0].player1.y = data->game[0].rows - 1;
+				data->game[0].player1.nLives--;
+				Sleep(30);
+				continue;
+			}*/
+
+			/*if (!moveFrog(data)) { // ganhou o jogo ISTO É SÓ PARA DEBUG, NÃO VAI ESTAR DENTRO DUMA THREAD
 				//data->game[0].player1.hasMoved = TRUE;
 				//win = TRUE;
 				//data->game[0].player1.score += 100;
@@ -778,22 +840,8 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				Sleep(200);
 				end = TRUE;
 				continue;
-			}*/
-			
-
-			if (data->game[0].time == 0 && data->game[0].player1.y != 0) { // se o tempo for 0 e não chegou à meta então
-				if (data->game[0].player1.nLives != 0) {
-					data->game[0].player1.nLives--;
-					//data->game[0].frogs->y = data->game[0].board[data->game[0].rows - 1][10]; // se ele perder, volta para a partida numa coluna do meio
-					data->game[0].board[data->game[0].rows - 1][10] = _T('s');
-					Sleep(200);
-					continue;
-					// e não end = TRUE;
-				}
-				end = TRUE;
-				Sleep(200);
-				continue;
 			}
+		
 
 			if (data->game[0].player1.y == 0) {
 				win = TRUE;
@@ -801,7 +849,7 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 				data->game[0].player1.score += 100;
 			}
 		}
-	}
+	}*/
 }
 
 
@@ -831,7 +879,9 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 						 _tprintf(_T("\nError reading from pipe!\n"));
 						 break;
 					 }
-					 data->game[0].board[data->game->player1.y][data->game->player1.x] = _T('s'); // é a jogada que vai fazer
+					 // é a jogada que vai fazer
+					 data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+					 //moveFrog(data);
 				 }
 			 }
 			 ReleaseMutex(data->threadData->hPipeMutex);
@@ -932,8 +982,6 @@ int _tmain(int argc, TCHAR** argv) {
 		exit(-100);
 	}
 
-	//startgame(&data);
-
 	for (DWORD i = 0; i < NUM; i++) {
 		_tprintf(_T("\nServer creating pipe: '%s'...\n"), PIPE_NAME);
 
@@ -972,7 +1020,7 @@ int _tmain(int argc, TCHAR** argv) {
 
 	startgame(&data);
 
-	_tprintf(_T("\nCriei a thread dos pipes!\n"));
+	_tprintf(_T("\nCriei a thread dos pipes e do move cars!\n"));
 
 	hReceiveCmdThread = CreateThread(NULL, 0, receiveCmdFromOperator, &data, 0, NULL);
 	if (hReceiveCmdThread == NULL) {
@@ -1006,6 +1054,7 @@ int _tmain(int argc, TCHAR** argv) {
 			exit(-190);
 		}
 	}
+	// fazer uma verificação para abrir o pipe um cliente se for gameType 1 ou abrir o pipe para os dois clientes se for gameType 2
 
 	while ((!data.game[0].isShutdown || !data.game[1].isShutdown) && nClients < NUM + 1) {
 		DWORD result = WaitForMultipleObjects(NUM, data.threadData->hEvents, FALSE, 1000);
@@ -1018,7 +1067,7 @@ int _tmain(int argc, TCHAR** argv) {
 				}
 			}
 			else {
-				if (data.game[0].suspended == FALSE && nClients == 1) {
+				if (!data.game[0].suspended && nClients == 1) {
 					ResumeThread(hDecreaseTimerThread);
 				}
 			}
@@ -1046,8 +1095,8 @@ int _tmain(int argc, TCHAR** argv) {
 
 
 	//RegCloseKey(reg.key);
-	UnmapViewOfFile(data.sharedMemGame);
-	UnmapViewOfFile(data.sharedMemCmd);
+	//UnmapViewOfFile(data.sharedMemGame);
+	//UnmapViewOfFile(data.sharedMemCmd);
 
 	CloseHandle(hReceiveCmdThread);
 	CloseHandle(hDecreaseTimerThread);
