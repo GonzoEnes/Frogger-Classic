@@ -1,23 +1,27 @@
 ﻿  server.c
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(178,8): warning C4101: 'aux': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(298,13): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(298,46): warning C4018: '>': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(625,104): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(42,47): warning C4273: 'createSharedMemoryAndInitServer': inconsistent dll linkage
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\DLL\FroggerDLL.h(18,22): message : see previous definition of 'createSharedMemoryAndInitServer'
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(182,8): warning C4101: 'aux': unreferenced local variable
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(302,13): warning C4018: '>': signed/unsigned mismatch
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(302,46): warning C4018: '>': signed/unsigned mismatch
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(626,104): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(667,103): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(627,104): warning C4020: 'RegSetValueExW': too many actual parameters
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(668,103): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(691,102): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(669,103): warning C4020: 'RegSetValueExW': too many actual parameters
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(692,102): warning C4020: 'RegSetValueExW': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(938,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1094,67): warning C4047: 'function': 'BOOL' differs in levels of indirection from 'HANDLE'
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1094,47): warning C4024: 'WaitForMultipleObjects': different types for formal and actual parameter 3
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1094,88): warning C4047: 'function': 'DWORD' differs in levels of indirection from 'HANDLE'
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1094,69): warning C4024: 'WaitForMultipleObjects': different types for formal and actual parameter 4
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1094,90): warning C4020: 'WaitForMultipleObjects': too many actual parameters
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(208): warning C4715: 'insertFrog': not all control paths return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(336): warning C4715: 'checkAllCollisions': not all control paths return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(387): warning C4716: 'moveFrog': must return a value
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(859): warning C4716: 'threadFroggerMultiPlayer': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(693,102): warning C4020: 'RegSetValueExW': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(953,18): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1109,67): warning C4047: 'function': 'BOOL' differs in levels of indirection from 'HANDLE'
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1109,47): warning C4024: 'WaitForMultipleObjects': different types for formal and actual parameter 3
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1109,88): warning C4047: 'function': 'DWORD' differs in levels of indirection from 'HANDLE'
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1109,69): warning C4024: 'WaitForMultipleObjects': different types for formal and actual parameter 4
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(1109,90): warning C4020: 'WaitForMultipleObjects': too many actual parameters
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(212): warning C4715: 'insertFrog': not all control paths return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(340): warning C4715: 'checkAllCollisions': not all control paths return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(391): warning C4716: 'moveFrog': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(779): warning C4716: 'threadFroggerSinglePlayer': must return a value
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\server.c(873): warning C4716: 'threadFroggerMultiPlayer': must return a value
+     Creating library C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.lib and object C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exp
   Server.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Server.exe

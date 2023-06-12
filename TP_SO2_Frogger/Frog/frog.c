@@ -19,80 +19,65 @@ void showGame(pGame game) {
 }
 
 void playFrogger(pGame game, HANDLE hPipeComms) {
-	BOOL ret;
-	DWORD nBytes;
-	TCHAR opt[256];
+    BOOL ret;
+    DWORD nBytes;
+    TCHAR opt = 0;
 
-	while (!game->isShutdown) {
-		ret = ReadFile(hPipeComms, game, sizeof(Game), &nBytes, NULL);
-		game->isSuspended = FALSE;
-		showGame(game);
-		_tprintf(_T("\nTEMPO JOGO: %d"), game->time);
-		_tprintf(_T("\n"));
-		Sleep(1000);
-		system("cls");
+    while (!game->isShutdown) {
+        ret = ReadFile(hPipeComms, game, sizeof(Game), &nBytes, NULL);
 
-		if (!ret || !nBytes) { // if ReadFile failed or read 0 bytes, then:
-			_tprintf(_T("\n[ERROR] Frogger game shutting down...\n"));
-			game->isShutdown = TRUE;
-			return;
-		}
+        game->isSuspended = FALSE;
 
-		_tprintf(_T("\nData read successfully. Starting game...\n"));
+        showGame(game);
 
-		/*do {
-			/*while (_tcscmp(opt, _T("A")) != 0 && _tcscmp(opt, _T("D")) != 0 && _tcscmp(opt, _T("W")) != 0 && _tcscmp(opt, _T("S")) != 0) {
-				_tprintf(_T("\nMove (PAUSE to pause the game): "));
-				
-				_fgetts(opt, sizeof(opt), stdin);
+        _tprintf(_T("\nTEMPO JOGO: %d"), game->time);
 
-				if (_tcscmp(opt, _T("W")) == 0) {
-					game->player1.y -= 1;
-				}
+        _tprintf(_T("\n"));
 
-				else if (_tcscmp(opt, _T("A")) == 0) {
-					game->player1.x -= 1;
-				}
+        if (!ret || !nBytes) { // if ReadFile failed or read 0 bytes, then:
+            _tprintf(_T("\n[ERROR] Frogger game shutting down...\n"));
+            game->isShutdown = TRUE;
+            return;
+        }
 
-				else if (_tcscmp(opt, _T("S")) == 0) {
-					game->player1.y += 1;
-				}
+        /*_tprintf(_T("\nData read successfully. Starting game...\n"));
 
-				else if (_tcscmp(opt, _T("D")) == 0) {
-					game->player1.x += 1;
-				}
+        _tprintf(_T("\nMove (PAUSE to pause the game): "));
+        
+        _tcscanf_s(_T("%c"), &opt);
 
+        if (opt == _T('W')) {
+            game->player1.y -= 1;
+        }
+        else if (opt == _T('A')) {
+            game->player1.x -= 1;
+        }
+        else if (opt == _T('S')) {
+            game->player1.y += 1;
+        }
+        else if (opt == _T('D')) {
+            game->player1.x += 1;
+        }
+        else {
+            _tprintf(_T("\nInsert a valid option!\n"));
+            continue; 
+        }*/
 
-				if (_tcscmp(opt, _T("A")) != 0 || _tcscmp(opt, _T("D")) != 0 || _tcscmp(opt, _T("W")) != 0 || _tcscmp(opt, _T("S")) != 0) {
-					_tprintf(_T("\nInsert a valid option!\n"));
-					break;
-				}
+        if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
+            _tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
+        }
+        else {
+            _tprintf(_T("\nData successfully sent to server...\n"));
+        }
 
-				if (_tcscmp(opt, _T("PAUSE") == 0)) {
-					game->isSuspended = TRUE;
-					break;
-				}
-			}
-
-		} while (!game->isShutdown);*/
-
-		if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
-			_tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
-		}
-
-		else {
-			_tprintf(_T("\nData successfully sent to server...\n"));
-		}
-
-		if (game->isSuspended) {
-			break;
-		}
-	}
+        if (game->isSuspended) {
+            break;
+        }
+    }
 }
 
-
 int _tmain(int argc, TCHAR** argv) {
-	
+
 	Game game;
 
 	HANDLE hPipeComms;
@@ -101,7 +86,7 @@ int _tmain(int argc, TCHAR** argv) {
 	game.isSuspended = FALSE;
 
 	TCHAR opt[BUFFER];
-	
+
 
 #ifdef UNICODE
 	(void)_setmode(_fileno(stdin), _O_WTEXT);
@@ -132,7 +117,7 @@ int _tmain(int argc, TCHAR** argv) {
 
 		else {
 			_tprintf(_T("\nTo unpause the game, press any key..."));
-			_fgetts(opt, sizeof(opt), stdin);
+			_fgetts(opt, 256, stdin);
 			game.isSuspended = FALSE;
 		}
 	}

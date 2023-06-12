@@ -39,19 +39,19 @@ DWORD WINAPI frogThread(LPVOID params) {
         if (!returnValue || !n) {
             break;
         }
+        
+        //Sleep(1000);
+        
+        WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
+        
+        InvalidateRect(data->hWnd, NULL, TRUE);
 
         Sleep(30);
-
-        /*returnValueWrite = WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-        if (!returnValueWrite || !n) {
-            break;
-        }
-        //InvalidateRect(data->hWnd, NULL, TRUE);
-        Sleep(30);*/
     }
 
-     ReleaseMutex(data->hMutex);
-     return (1);
+    ReleaseMutex(data->hMutex);
+    
+    return (1);
 }
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
@@ -313,7 +313,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
     case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
         GetClientRect(hWnd, &rect);
-        FillRect(hdc, &rect, CreateSolidBrush(RGB(255, 0, 0)));
+        FillRect(hdc, &rect, CreateSolidBrush(RGB(0, 0, 255)));
         totalPixels = 55 * data->game->columns;		// colocar colunas que le do pipe no futuro
         xBitmap = (800 - (totalPixels / 2));
         yBitmap = 150;
@@ -352,35 +352,43 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
         }
 
         BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
+
         EndPaint(hWnd, &ps);
+        
         break;
 
     case WM_KEYDOWN:
         switch (wParam) {
         case VK_UP:
             // Move frog up
-            //hdc = GetDC(hWnd);
+            hdc = GetDC(hWnd);
             data->game->player1.y--;
             //data->game->nCars = 0;
-            //MessageBox(hWnd, TEXT("Movi - me"), TEXT("BOAS"), MB_OK | MB_ICONEXCLAMATION);
-            WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
-            InvalidateRect(hWnd, NULL, TRUE); // Invalidate the window to trigger a repaint
+            //MessageBox(hWnd, TEXT("Movi - me"), TEXT("BOAS"), MB_OK | MB_ICONEXCLAMATION)
+            //InvalidateRect(hWnd, NULL, TRUE);
             ReleaseDC(hWnd, hdc);
             break;
         case VK_DOWN:
             // Move frog down
+            hdc = GetDC(hWnd);
+
             data->game->player1.y++;
-            InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
+            // InvalidateRect(hWnd, NULL, TRUE);
             break;
         case VK_LEFT:
+            hdc = GetDC(hWnd);
             // Move frog left
             data->game->player1.x--;
-            InvalidateRect(hWnd, NULL, TRUE);
+            //InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
             break;
         case VK_RIGHT:
+            hdc = GetDC(hWnd);
             // Move frog right
             data->game->player1.x++;
-            InvalidateRect(hWnd, NULL, TRUE);
+            // InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
             break;
         }
         break;
@@ -388,7 +396,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
         case WM_COMMAND:
             if (LOWORD(wParam) == BTN_QUIT) {
                 data->game->isShutdown = TRUE;
-                Sleep(3000);
+                Sleep(2000);
                 DestroyWindow(hWnd);
             }
         break;

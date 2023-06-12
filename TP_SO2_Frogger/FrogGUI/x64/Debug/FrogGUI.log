@@ -8,4 +8,5 @@ C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(3
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(279,12): warning C4101: 'hMutex': unreferenced local variable
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(250,11): warning C4101: 'xPos': unreferenced local variable
 C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(251,11): warning C4101: 'yPos': unreferenced local variable
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(257,11): warning C4101: 'n': unreferenced local variable
   FrogGUI.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\FrogGUI.exe

@@ -6,8 +6,12 @@
 #include <windows.h>
 #include "../Server/structs.h"
 #include "../Server/defines.h"
+#include "../DLL/FroggerDLL.h"
 
-BOOL createSharedMemoryAndInit(pData data) {
+extern __declspec(dllimport) BOOL createSharedMemoryAndInitOperator(pData data);
+
+
+BOOL createSharedMemoryAndInitOperator(pData data) {
 	BOOL firstProcess = FALSE;
 	_tprintf(TEXT("\n\nStarting operator configs...\n\n"));
 
@@ -314,7 +318,7 @@ int _tmain(TCHAR** argv, int argc) {
 		return 0;
 	}
 
-	if (!createSharedMemoryAndInit(&data)) {
+	if (!createSharedMemoryAndInitOperator(&data)) {
 		_tprintf(_T("\nCan't init shared memory...\n"));
 		return -2;
 	}
