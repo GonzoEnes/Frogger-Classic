@@ -40,7 +40,7 @@ DWORD WINAPI frogThread(LPVOID params) {
             break;
         }
         
-        //Sleep(1000);
+        Sleep(50);
         
         WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
         
@@ -313,7 +313,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
     case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
         GetClientRect(hWnd, &rect);
-        FillRect(hdc, &rect, CreateSolidBrush(RGB(0, 0, 255)));
         totalPixels = 55 * data->game->columns;		// colocar colunas que le do pipe no futuro
         xBitmap = (800 - (totalPixels / 2));
         yBitmap = 150;
@@ -323,7 +322,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
                 if (i == data->game->rows - 1 || i == 0) { // se estivermos na primeira/ultima coluna, pinta de azul
                     BitBlt(hdc, xBitmap, yBitmap, bitmapBeginEnd.bmWidth, bitmapBeginEnd.bmHeight, bitmapBeginEndDC, 0, 0, SRCCOPY);
                 }
-                else { //senão pinta de preto
+                else { //senão mete o bitmap de preto
                     BitBlt(hdc, xBitmap, yBitmap, bitmap.bmWidth, bitmap.bmHeight, bitmapDC, 0, 0, SRCCOPY);
                 }
 
@@ -351,12 +350,10 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             yBitmap = yBitmap + 55;
         }
 
-        BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
-
+        //BitBlt(hdc, 0, 0, rect.right, rect.bottom, memDC, 0, 0, SRCCOPY);
         EndPaint(hWnd, &ps);
-        
-        break;
 
+        break;
     case WM_KEYDOWN:
         switch (wParam) {
         case VK_UP:
@@ -415,11 +412,14 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             DeleteObject(hBitmapObstacle);
             PostQuitMessage(0);
             break;
+        case WM_ERASEBKGND:
+            return TRUE;
         default:
             // Neste exemplo, para qualquer outra mensagem (p.e. "minimizar","maximizar","restaurar")
             // não é efectuado nenhum processamento, apenas se segue o "default" do Windows
             return(DefWindowProc(hWnd, messg, wParam, lParam));
             break;  // break tecnicamente desnecessário por causa do return
         }
-    return(0);
+    
+        return(0);
 }

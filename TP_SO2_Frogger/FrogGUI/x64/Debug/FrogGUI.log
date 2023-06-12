@@ -1,12 +1,12 @@
 ﻿  FrogGUI.c
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\frog.h(15,2): warning C4091: 'typedef ': ignored on left of 'FROGCOMMS' when no variable is declared
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(32,10): warning C4101: 'returnValueWrite': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(321,27): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(322,31): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(279,12): warning C4101: 'hMutex': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(250,11): warning C4101: 'xPos': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(251,11): warning C4101: 'yPos': unreferenced local variable
-C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(257,11): warning C4101: 'n': unreferenced local variable
-  FrogGUI.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\FrogGUI.exe
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\frog.h(15,2): warning C4091: 'typedef ': ignored on left of 'FROGCOMMS' when no variable is declared
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(32,10): warning C4101: 'returnValueWrite': unreferenced local variable
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(320,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(321,31): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(279,12): warning C4101: 'hMutex': unreferenced local variable
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(250,11): warning C4101: 'xPos': unreferenced local variable
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(251,11): warning C4101: 'yPos': unreferenced local variable
+C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\FrogGUI\FrogGUI.c(257,11): warning C4101: 'n': unreferenced local variable
+  FrogGUI.vcxproj -> C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\FrogGUI.exe

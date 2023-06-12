@@ -899,7 +899,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 					 }
 					 // é a jogada que vai fazer
 					 data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
-					 _tprintf(_T("\n[%d,%d]"), data->game->player1.y, data->game->player1.x);
+					 //_tprintf(_T("\n[%d,%d]"), data->game->player1.y, data->game->player1.x);
 					 //moveFrog(data);
 				 }
 			 }
