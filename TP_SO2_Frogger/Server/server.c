@@ -179,13 +179,17 @@ void initBoard(pData data) {
 }
 
 DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM FROG
-	DWORD aux;
 	if (data->game->gameType == 1) {
 		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
 		data->game->nFrogs++;
-		return 1;
 	}
-
+	else {
+		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+		data->game->board[data->game->player1.y][data->game->player1.x + 2] = _T('s');
+		data->game->nFrogs = 2;
+	}
+	
+	return 1;
 	// meter dois sapos lado a lado, ver isso
 	
 
