@@ -1,1 +1,8 @@
-﻿  Frog.vcxproj -> C:\Users\Goncalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Frog.exe
+﻿  frog.c
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Frog\frog.c(47,20): warning C4473: '_cwscanf_s' : not enough arguments passed for format string
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Frog\frog.c(47,20): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Frog\frog.c(47,20): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Frog\frog.c(47,20): message : this argument is used as a buffer size
+  Frog.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\Frog.exe

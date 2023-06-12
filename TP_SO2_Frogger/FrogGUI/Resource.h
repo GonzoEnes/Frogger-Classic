@@ -16,6 +16,7 @@
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #define BTN_QUIT				150
+#define LABEL_SCORE				100
 #endif
 // Next default values for new objects
 //

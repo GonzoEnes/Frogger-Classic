@@ -40,7 +40,7 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
             return;
         }
 
-        /*_tprintf(_T("\nData read successfully. Starting game...\n"));
+        _tprintf(_T("\nData read successfully. Starting game...\n"));
 
         _tprintf(_T("\nMove (PAUSE to pause the game): "));
         
@@ -61,7 +61,7 @@ void playFrogger(pGame game, HANDLE hPipeComms) {
         else {
             _tprintf(_T("\nInsert a valid option!\n"));
             continue; 
-        }*/
+        }
 
         if (!WriteFile(hPipeComms, game, sizeof(Game), &nBytes, NULL)) {
             _tprintf(_T("\n[ERROR] Can't write back to server. Failed writing to pipe.\n"));
