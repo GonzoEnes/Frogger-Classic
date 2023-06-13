@@ -891,8 +891,9 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 					 }
 					 // é a jogada que vai fazer
 					 
-					 moveCars(data);
+					
 					 data->game[i].board[data->game[i].player1.y][data->game[i].player1.x] = _T('s');
+					 moveCars(data);
 				 }
 			 }
 			 ReleaseMutex(data->threadData->hPipeMutex);
