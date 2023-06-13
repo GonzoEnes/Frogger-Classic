@@ -1,1 +1,9 @@
-﻿  DLL.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\DLL.dll
+﻿  FroggerDLL.c
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(15,2): warning C4091: 'typedef ': ignored on left of 'PIPES' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\Server\pipes.h(22,2): warning C4091: 'typedef ': ignored on left of 'THREAD_DATA' when no variable is declared
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\DLL\FroggerDLL.c(7,47): warning C4273: 'createSharedMemoryAndInitServer': inconsistent dll linkage
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\DLL\FroggerDLL.h(18,22): message : see previous definition of 'createSharedMemoryAndInitServer'
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\DLL\FroggerDLL.c(130,52): warning C4273: 'createSharedMemoryAndInitOperator': inconsistent dll linkage
+C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\DLL\FroggerDLL.h(20,22): message : see previous definition of 'createSharedMemoryAndInitOperator'
+     Creating library C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\DLL.lib and object C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\DLL.exp
+  DLL.vcxproj -> C:\Users\Gonsalo\Documents\GitHub\SO2_Frogger\TP_SO2_Frogger\x64\Debug\DLL.dll

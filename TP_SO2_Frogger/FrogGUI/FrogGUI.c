@@ -369,7 +369,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				}
 
 				else if (data->game->board[i][j] == _T('O')) {
-					//tratar do bitmap do obst�culo
+                    BitBlt(hdc, xBitmap, yBitmap, bitmapObstacle.bmWidth, bitmapObstacle.bmHeight, bitmapObstacleDC, 0,0, SRCCOPY);
 				}
 
 				xBitmap = xBitmap + 55;

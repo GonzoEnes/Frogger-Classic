@@ -1,5 +1,4 @@
 ﻿#include <tchar.h>
-//#include <math.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <io.h>
@@ -7,9 +6,6 @@
 #include <time.h>
 #include "structs.h"
 #include "../DLL/FroggerDLL.h"
-
-extern __declspec(dllimport) BOOL createSharedMemoryAndInitServer(pData data);
-
 
 void showBoard(pData data) {
 	WaitForSingleObject(data->hMutex, INFINITE);
@@ -37,129 +33,6 @@ void showBoard(pData data) {
 		}
 	}
 	ReleaseMutex(data->hMutex);
-}
-
-BOOL createSharedMemoryAndInitServer(pData p) {
-	BOOL firstProcess = FALSE;
-	_tprintf(TEXT("\n\nConfigs for the game initializing...\n"));
-
-	p->hFileMapFrogger = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_GAME);
-
-	if (p->hFileMapFrogger == NULL) { // Map
-		firstProcess = TRUE;
-		p->hFileMapFrogger = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(ShmGame), SHM_NAME_GAME);
-
-		if (p->hFileMapFrogger == NULL) {
-			_tprintf(TEXT("\nError CreateFileMapping (%d).\n"), GetLastError());
-			return FALSE;
-		}
-	}
-
-	p->sharedMemGame = (pShmGame)MapViewOfFile(p->hFileMapFrogger, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmGame)); // Shared Memory
-	if (p->sharedMemGame == NULL) {
-		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
-		CloseHandle(p->hFileMapFrogger);
-		return FALSE;
-	}
-
-	p->hFileMapMemory = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHM_NAME_MESSAGE);
-	if (p->hFileMapMemory == NULL) {
-		p->hFileMapMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(ShmCommand), SHM_NAME_MESSAGE);
-
-		if (p->hFileMapMemory == NULL) {
-			_tprintf(TEXT("\nError CreateFileMapping (%d).\n"), GetLastError());
-			return FALSE;
-		}
-	}
-
-	p->sharedMemCmd = (ShmCommand*)MapViewOfFile(p->hFileMapMemory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ShmCommand));
-	if (p->sharedMemCmd == NULL) {
-		_tprintf(TEXT("\nError: MapViewOfFile (%d)."), GetLastError());
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hFileMapMemory);
-		return FALSE;
-	}
-
-	p->hMutex = CreateMutex(NULL, FALSE, MUTEX_NAME);
-	if (p->hMutex == NULL) {
-		_tprintf(TEXT("\nError creating mutex (%d).\n"), GetLastError());
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->sharedMemCmd);
-		return FALSE;
-	}
-
-	p->hWriteSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_WRITE_NAME);
-	if (p->hWriteSem == NULL) {
-		_tprintf(TEXT("\nError creating writting semaphore: (%d).\n"), GetLastError());
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hMutex);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->sharedMemCmd);
-		return FALSE;
-	}
-
-	p->hReadSem = CreateSemaphore(NULL, BUFFERSIZE, BUFFERSIZE, SEM_READ_NAME);
-	if (p->hReadSem == NULL) {
-		_tprintf(TEXT("\nError creating reading semaphore (%d).\n"), GetLastError());
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hMutex);
-		CloseHandle(p->hWriteSem);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->sharedMemCmd);
-		return FALSE;
-	}
-
-	if (GetLastError() == ERROR_ALREADY_EXISTS) { // after failing to create sem, if the error provided is ALREADY_EXISTS assume 2 servers are being run
-		_tprintf(TEXT("\nTrying to run 2 servers at once, shutting down...\n"));
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hMutex);
-		CloseHandle(p->hWriteSem);
-		CloseHandle(p->hReadSem);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->sharedMemCmd);
-		return FALSE;
-	}
-
-	p->hCmdEvent = CreateEvent(NULL, TRUE, FALSE, EVENT_NAME);
-	if (p->hCmdEvent == NULL) {
-		_tprintf(TEXT("\nError creating command event (%d).\n"), GetLastError());
-		//UnmapViewOfFile(p->sharedMemGame);
-		//CloseHandle(p->hMapFileGame);
-		CloseHandle(p->hMutex);
-		CloseHandle(p->hWriteSem);
-		CloseHandle(p->hReadSem);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->hFileMapMemory);
-		return FALSE;
-	}
-
-	p->mutexCmd = CreateMutex(NULL, FALSE, COMMAND_MUTEX_NAME);
-	if (p->mutexCmd == NULL) {
-		_tprintf(TEXT("\nError creating command mutex.\n"));
-		UnmapViewOfFile(p->sharedMemGame);
-		CloseHandle(p->hFileMapFrogger);
-		CloseHandle(p->hMutex);
-		CloseHandle(p->hWriteSem);
-		CloseHandle(p->hReadSem);
-		CloseHandle(p->hCmdEvent);
-		CloseHandle(p->hFileMapMemory);
-		UnmapViewOfFile(p->sharedMemCmd);
-		return FALSE;
-	}
-
-	for (DWORD i = 0; i < BUFFERSIZE; i++) {
-		p->sharedMemCmd->operatorCmds->parameter = 0;
-		p->sharedMemCmd->operatorCmds->cmd = 0;
-	}
-
-	_tprintf(_T("\nEverything created successfully.\n"));
-	return TRUE;
 }
 
 void initBoard(pData data) {
@@ -678,6 +551,7 @@ BOOL readRegConfigs(pData data, pRegConfig reg, INT argc, TCHAR** argv) {
 	}
 
 	RegCloseKey(reg->key);
+	
 	return TRUE;
 }
 
@@ -894,6 +768,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 					
 					 data->game[i].board[data->game[i].player1.y][data->game[i].player1.x] = _T('s');
 					 moveCars(data);
+					 Sleep(10);
 				 }
 			 }
 			 ReleaseMutex(data->threadData->hPipeMutex);
@@ -1106,7 +981,7 @@ int _tmain(int argc, TCHAR** argv) {
 	WaitForMultipleObjects(5, hReceiveCmdThread, hDecreaseTimerThread, hSendGameDataThread, hSinglePlayerThread, hPipeThread, TRUE, 2000);
 
 
-	RegCloseKey(reg.key);
+	//RegCloseKey(reg.key);
 	UnmapViewOfFile(data.sharedMemGame);
 	UnmapViewOfFile(data.sharedMemCmd);
 

@@ -12,7 +12,6 @@ extern "C" {
 #define FROGGERDLL_API __declspec(dllexport)
 #else
 #define FROGGERDLL_API __declspec(dllimport)
-
 #endif
 
 	FROGGERDLL_API BOOL createSharedMemoryAndInitServer(pData p);
