@@ -1080,7 +1080,7 @@ int _tmain(int argc, TCHAR** argv) {
 				}
 			}
 			else {
-				if (!data.game[0].suspended && nClients == 2) {
+				if (!data.game[0].suspended && nClients == 1) {
 					ResumeThread(hDecreaseTimerThread);
 				}
 			}
