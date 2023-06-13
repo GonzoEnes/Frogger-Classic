@@ -485,7 +485,7 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 		 
 		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
-			showBoard(data);
+			//showBoard(data);
 			Sleep(1000);
 		}
 		else if (data->time == 0) {
@@ -731,38 +731,54 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					_tprintf(_T("\nChegou à meta!\n"));
 					win = TRUE;
 					end = TRUE;
-					continue;
+					
 				}
 			}
 			else {
+				if (checkFrogSide(data)) {
+					
+					data->game[0].player1.x = 10;
+					data->game[0].player1.y = data->game[0].rows - 1; //tens
+					//data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] = _T('s');
+					data->game[0].player1.nLives--;
+					_tprintf(_T("\nMorreu!\n"));
+					_tprintf(_T("\nVidas: %d"), data->game[0].player1.nLives);
+
+
+
+				}
+
+				if (data->game[0].player1.nLives <= 0) {
+					data->game->isMoving = FALSE;
+
+					//end = TRUE;
+				}
+
+				
+
 				if (data->game[0].player1.y == 0) {
+					data->game[0].player1.x = 10;
+					data->game[0].player1.y = data->game[0].rows - 1;
+					data->game->isMoving = FALSE;
 					_tprintf(_T("\nChegou à meta!\n"));
 					data->game[0].player1.score += 100;
-					win = TRUE;
-					end = TRUE;
-					continue;
+					//win = TRUE;
+					//end = TRUE;
+					
 				}
-				else {
-					if (checkFrogSide(data)) {
-						_tprintf(_T("\nMorreu!\n"));
-						data->game[0].player1.nLives--;
-						_tprintf(_T("\nVidas: %d"), data->game[0].player1.nLives);
-						data->game[0].player1.x = 10;
-						data->game[0].player1.y = data->game[0].rows - 1;
-						continue;
-						
-						if (data->game[0].player1.nLives == 0) {
-							end = TRUE;
-							continue;
-						}
-					}
-				}
+
+				
+				
 			}
 		}
+	
 	}
 
-	if (end && !win) {
+
+	if (end) {
 		_tprintf(_T("\nPerdeu!\n"));
+		data->game->isMoving = FALSE;
+
 		Sleep(1000);
 		data->game[0].isShutdown = TRUE;
 		return 1;
@@ -779,6 +795,73 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 
 DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
 	pData data = (pData)params;
+	BOOL win = FALSE;
+	BOOL end = FALSE;
+
+	while (!end) {
+		if (!data->game[1].isSuspended) {
+			if (data->game[1].time == 0) {
+				if (data->game[1].player1.y == 0) {
+					_tprintf(_T("\nChegou à meta!\n"));
+					win = TRUE;
+					end = TRUE;
+
+				}
+			}
+			else {
+
+				if (data->game[1].player1.nLives <= 0) {
+					data->game->isMoving = FALSE;
+
+					//end = TRUE;
+				}
+
+				if (checkFrogSide(data)) {
+					data->game[1].player1.nLives--;
+					data->game[1].player1.x = 10;
+					data->game[1].player1.y = data->game[1].rows - 1; //tens
+					data->game[1].board[data->game[1].player1.y][data->game[1].player1.x] = _T('s');
+					_tprintf(_T("\nMorreu!\n"));
+					_tprintf(_T("\nVidas: %d"), data->game[1].player1.nLives);
+
+
+
+				}
+
+				if (data->game[1].player1.y == 0) {
+					data->game[1].player1.x = 10;
+					data->game[1].player1.y = data->game[1].rows - 1;
+					data->game->isMoving = FALSE;
+					_tprintf(_T("\nChegou à meta!\n"));
+					data->game[0].player1.score += 100;
+					//win = TRUE;
+					//end = TRUE;
+
+				}
+
+
+
+			}
+		}
+
+	}
+
+
+	if (end) {
+		_tprintf(_T("\nPerdeu!\n"));
+		data->game->isMoving = FALSE;
+
+		Sleep(1000);
+		data->game[1].isShutdown = TRUE;
+		return 1;
+	}
+
+	if (win) {
+		_tprintf(_T("\nGanhou!"));
+		Sleep(1000);
+		data->game[1].isShutdown = TRUE;
+		return 1;
+	}
 
 }
 
@@ -807,9 +890,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 						 break;
 					 }
 					 // é a jogada que vai fazer
-					 if (data->game[i].player1.y < 0) {
-						 data->game[i].player1.y = 0;
-					 }
+					 
 					 moveCars(data);
 					 data->game[i].board[data->game[i].player1.y][data->game[i].player1.x] = _T('s');
 				 }
@@ -1024,9 +1105,9 @@ int _tmain(int argc, TCHAR** argv) {
 	WaitForMultipleObjects(5, hReceiveCmdThread, hDecreaseTimerThread, hSendGameDataThread, hSinglePlayerThread, hPipeThread, TRUE, 2000);
 
 
-	//RegCloseKey(reg.key);
-	//UnmapViewOfFile(data.sharedMemGame);
-	//UnmapViewOfFile(data.sharedMemCmd);
+	RegCloseKey(reg.key);
+	UnmapViewOfFile(data.sharedMemGame);
+	UnmapViewOfFile(data.sharedMemCmd);
 
 	CloseHandle(hReceiveCmdThread);
 	CloseHandle(hDecreaseTimerThread);

@@ -164,19 +164,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
     if (data.hPipe == INVALID_HANDLE_VALUE) {
         DestroyWindow(hWnd);
     }
-
     HWND hwndButtonQuit = CreateWindow(
         L"BUTTON",  // Predefined class; Unicode assumed 
-        L"Quit",      // Button text 
+        L"Quit",    // Button text 
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,  // Styles 
-        0,         // x position 
-        0,         // y position 
-        100,        // Button width
-        75,        // Button height
-        hWnd,     // Parent window
-        (HMENU)BTN_QUIT,       // No menu.
+        0,          // x position 
+        0,          // y position 
+        200,        // Button width
+        100,        // Button height
+        hWnd,       // Parent window
+        (HMENU)BTN_QUIT,  // No menu.
         NULL,
-        NULL);
+        NULL
+    );
+   
 
 	HWND hwndLabelScore = CreateWindow(
 		L"STATIC",                       // Predefined class; Unicode assumed 
@@ -388,6 +389,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             // Move frog up
             hdc = GetDC(hWnd);
             data->game->player1.y--;
+           // data->game->board[data->game->player1.y][data->game->player1.x]=_T('s');
             //data->game->nCars = 0;
             //MessageBox(hWnd, TEXT("Movi - me"), TEXT("BOAS"), MB_OK | MB_ICONEXCLAMATION)
             //InvalidateRect(hWnd, NULL, TRUE);
@@ -398,6 +400,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
 
             data->game->player1.y++;
+            //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+
             ReleaseDC(hWnd, hdc);
             // InvalidateRect(hWnd, NULL, TRUE);
             break;
@@ -405,6 +409,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
             // Move frog left
             data->game->player1.x--;
+            //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+
             //InvalidateRect(hWnd, NULL, TRUE);
             ReleaseDC(hWnd, hdc);
             break;
@@ -412,6 +418,8 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
             // Move frog right
             data->game->player1.x++;
+            //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
+
             // InvalidateRect(hWnd, NULL, TRUE);
             ReleaseDC(hWnd, hdc);
             break;
