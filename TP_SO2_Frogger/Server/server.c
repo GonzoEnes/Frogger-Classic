@@ -54,46 +54,24 @@ void initBoard(pData data) {
 DWORD insertFrog(pData data) { // from shared memory give to operator SO METE UM FROG
 	if (data->game->gameType == 1) {
 		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
-		data->game->nFrogs++;
+		data->game->nFrogs = 1;
 	}
 	else {
-		data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
-		data->game->board[data->game->player2.y][data->game->player2.x + 2] = _T('s');
-		data->game->nFrogs = 2;
+		for (DWORD i = 0; i < 2; i++) {
+			data->game[i].board[data->game->player1.y][data->game->player1.x] = _T('s');
+			data->game[i].board[data->game->player2.y][data->game->player2.x] = _T('s');
+			data->game[i].nFrogs = 2;
+		}	
 	}
-	
 	return 1;
-	// meter dois sapos lado a lado, ver isso
-	
-
-	/*for (DWORD i = 0; i < data->game->rows; i++) { //mudar depois
-		for (DWORD j = 0; j < data->game->columns - 1; j++) {
-
-			//data->game[0].board[2][10] = _T('s');
-			//data->game[0].nFrogs++;
-			//data->game[0].frogX = 10;
-			//data->game[0].frogY = 2;
-			if (data->game[0].nFrogs == 0 && (i == data->game->rows-1)) {
-				while (data->game[0].nFrogs <= 1) {
-					//aux = rand() % data->game->columns;
-					data->game[0].board[i][10] = _T('s');
-					data->game[0].player1.y = i;
-					data->game[0].player1.x = 10;
-					data->game[0].nFrogs++;
-					_tprintf(TEXT("\n o sapo ta aqui %d %d\n"), data->game[0].player1.y, data->game[0].player1.x);
-					return 1;
-				}
-			}
-		}
-	}*/
 }
 
 void insertCars(pData data) {
-	
+
 	DWORD count = 0;
-	
+
 	data->game[0].nCars = rand() % (data->game[0].rows - 2) * 8;
-	
+
 	_tprintf(TEXT("\nNCARS: %d"), data->game[0].nCars);
 
 	if (data->game[0].nCars == 0) {
@@ -106,7 +84,7 @@ void insertCars(pData data) {
 		DWORD j = rand() % data->game[0].columns; // escolhe uma coluna aleatória
 
 		if (data->game[0].board[i][j] != _T('c') && data->game[0].board[i][j] != _T('s')) { // verifica se a posição está livre
-			
+
 			DWORD carsInLine = 0;
 
 			for (DWORD k = 0; k < data->game[0].columns; k++) { // conta o número de carros na linha atual
@@ -204,16 +182,217 @@ DWORD insertObstacle(pData data, INT row, INT column) {
 	return 1;
 }
 
-BOOLEAN checkFrogSide(pData data) {
+BOOLEAN checkFrogSide(pData data, Player player) {
 	//_tprintf(_T("\n coordenadas %d %d esta o simb: %c"), data->game[0].player1.y - 1, data->game[0].player1.x, data->game[0].board[data->game[0].player1.y - 1][data->game[0].player1.x]);
-		
-	return data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] == _T('c') || data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] == _T('O');
-}
-
-BOOL moveFrog(pData data) {
 	
-
+	return data->game->board[player.y][player.x] == _T('c') || data->game->board[player.y][player.x] == _T('O');
 }
+
+/*BOOL moveCars(pData data) {
+	if (data->game->gameType == 1) {
+		if (data->game[0].isMoving == TRUE) {
+			if (data->game[0].direction == FALSE) { // move from RIGHT - LEFT
+				for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+					for (DWORD j = 0; j < data->game[0].columns - 1; j++) { // iterate columns
+						if (j == 0 && data->game[0].board[i][j] == _T('c')) { // if we are at last col and has car
+							TCHAR prevElement = data->game[0].board[i][j + 1]; // store prev element before moving to the first spot of row
+							data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+							if (rand() % 10 < 9) {
+								DWORD randomRow = 1 + (rand() % (data->game[0].rows - 2));
+								data->game[0].board[randomRow][data->game[0].columns - 1] = _T('c');
+								continue;
+							}
+
+						}
+						if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+							TCHAR prevElement = data->game[0].board[i][j + 1];
+							if (data->game[0].board[i][j - 1] == _T('O')) {
+								data->game[0].board[i][j - 1] = _T('O');
+								data->game[0].board[i][j] = prevElement;
+								continue;
+							}
+							if (prevElement == _T('s')) {
+
+								data->game[0].board[i][j - 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
+
+							}
+							else if (prevElement == _T('O')) {
+								data->game[0].board[i][j - 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = _T('-');
+
+							}
+							else
+							{
+								data->game[0].board[i][j - 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = prevElement;
+
+							}
+						}
+						if (data->game[0].board[i][data->game[0].columns - 1] == _T('c')) {
+							data->game[0].board[i][data->game[0].columns - 1] = _T('-');
+							data->game[0].board[i][data->game[0].columns - 2] = _T('c'); //fix
+
+						}
+
+					}
+				}
+			}
+			else { // if the way they are moving is LEFT RIGHT (ou seja, TRUE)
+				for (DWORD i = 1; i < data->game[0].rows - 1; i++) { // iterate rows
+					for (DWORD j = data->game[0].columns - 1; j > 0; j--) { // iterate columns
+						if (j == data->game[0].columns - 1 && data->game[0].board[i][j] == _T('c')) {
+							TCHAR prevElement = data->game[0].board[i][j - 1]; // store prev element before moving to the first spot of row
+							data->game[0].board[i][j] = prevElement; // give last element the prev element before switching
+							if (rand() % 10 < 9) {
+								DWORD randomRow = 1 + (rand() % (data->game[0].rows - 2));
+								data->game[0].board[randomRow][0] = _T('c');
+								continue;
+							}
+						}
+						if (data->game[0].board[i][j] == _T('c') && j != 0 && j != data->game[0].columns - 1) {
+							TCHAR prevElement = data->game[0].board[i][j - 1];
+							if (data->game[0].board[i][j + 1] == _T('O')) {
+								//_tprintf(_T("\nEntrei aqui oaodasopidawoidj\n"));
+								data->game[0].board[i][j + 1] = _T('O');
+								data->game[0].board[i][j] = prevElement;
+								continue;
+							}
+
+							if (prevElement == _T('s')) {
+								data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
+
+							}
+							else if (prevElement == _T('O')) {
+								data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = _T('-');
+
+							}
+							else
+							{
+								data->game[0].board[i][j + 1] = data->game[0].board[i][j];
+								data->game[0].board[i][j] = prevElement;
+
+							}
+						}
+						if (data->game[0].board[i][0] == _T('c')) {
+							data->game[0].board[i][0] = _T('-');
+							data->game[0].board[i][1] = _T('c'); //fix
+
+						}
+					}
+				}
+			}
+		}
+		else {
+			return FALSE;
+		}
+	}
+	else {
+		for (DWORD x = 0; x < 2; x++) {
+			if (data->game[x].isMoving == TRUE) {
+				if (data->game[x].direction == FALSE) { // move from RIGHT - LEFT
+					for (DWORD i = 1; i < data->game[x].rows - 1; i++) { // iterate rows
+						for (DWORD j = 0; j < data->game[x].columns - 1; j++) { // iterate columns
+							if (j == 0 && data->game[x].board[i][j] == _T('c')) { // if we are at last col and has car
+								TCHAR prevElement = data->game[x].board[i][j + 1]; // store prev element before moving to the first spot of row
+								data->game[x].board[i][j] = prevElement; // give last element the prev element before switching
+								if (rand() % 10 < 9) {
+									DWORD randomRow = 1 + (rand() % (data->game[x].rows - 2));
+									data->game[x].board[randomRow][data->game[x].columns - 1] = _T('c');
+									continue;
+								}
+
+							}
+							if (data->game[x].board[i][j] == _T('c') && j != 0 && j != data->game[x].columns - 1) {
+								TCHAR prevElement = data->game[x].board[i][j + 1];
+								if (data->game[x].board[i][j - 1] == _T('O')) {
+									data->game[x].board[i][j - 1] = _T('O');
+									data->game[x].board[i][j] = prevElement;
+									continue;
+								}
+								if (prevElement == _T('s')) {
+
+									data->game[x].board[i][j - 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
+
+								}
+								else if (prevElement == _T('O')) {
+									data->game[x].board[i][j - 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = _T('-');
+
+								}
+								else
+								{
+									data->game[x].board[i][j - 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = prevElement;
+
+								}
+							}
+							if (data->game[x].board[i][data->game[x].columns - 1] == _T('c')) {
+								data->game[x].board[i][data->game[x].columns - 1] = _T('-');
+								data->game[x].board[i][data->game[x].columns - 2] = _T('c'); //fix
+
+							}
+
+						}
+					}
+				}
+				else { // if the way they are moving is LEFT RIGHT (ou seja, TRUE)
+					for (DWORD i = 1; i < data->game[x].rows - 1; i++) { // iterate rows
+						for (DWORD j = data->game[x].columns - 1; j > 0; j--) { // iterate columns
+							if (j == data->game[x].columns - 1 && data->game[x].board[i][j] == _T('c')) {
+								TCHAR prevElement = data->game[x].board[i][j - 1]; // store prev element before moving to the first spot of row
+								data->game[x].board[i][j] = prevElement; // give last element the prev element before switching
+								if (rand() % 10 < 9) {
+									DWORD randomRow = 1 + (rand() % (data->game[x].rows - 2));
+									data->game[x].board[randomRow][0] = _T('c');
+									continue;
+								}
+							}
+							if (data->game[x].board[i][j] == _T('c') && j != 0 && j != data->game[x].columns - 1) {
+								TCHAR prevElement = data->game[0].board[i][j - 1];
+								if (data->game[x].board[i][j + 1] == _T('O')) {
+									//_tprintf(_T("\nEntrei aqui oaodasopidawoidj\n"));
+									data->game[x].board[i][j + 1] = _T('O');
+									data->game[x].board[i][j] = prevElement;
+									continue;
+								}
+
+								if (prevElement == _T('s')) {
+									data->game[x].board[i][j + 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
+
+								}
+								else if (prevElement == _T('O')) {
+									data->game[x].board[i][j + 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = _T('-');
+
+								}
+								else
+								{
+									data->game[x].board[i][j + 1] = data->game[x].board[i][j];
+									data->game[x].board[i][j] = prevElement;
+
+								}
+							}
+							if (data->game[x].board[i][0] == _T('c')) {
+								data->game[x].board[i][0] = _T('-');
+								data->game[x].board[i][1] = _T('c'); //fix
+
+							}
+						}
+					}
+				}
+			}
+			else {
+				return FALSE;
+			}
+		}
+	}
+	return TRUE;
+}*/
 
 BOOL moveCars(pData data) {
 	if (data->game[0].isMoving == TRUE) {
@@ -241,24 +420,24 @@ BOOL moveCars(pData data) {
 
 							data->game[0].board[i][j - 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
-							 
+
 						}
 						else if (prevElement == _T('O')) {
 							data->game[0].board[i][j - 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = _T('-');
-							 
+
 						}
 						else
 						{
 							data->game[0].board[i][j - 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = prevElement;
-							 
+
 						}
 					}
 					if (data->game[0].board[i][data->game[0].columns - 1] == _T('c')) {
 						data->game[0].board[i][data->game[0].columns - 1] = _T('-');
 						data->game[0].board[i][data->game[0].columns - 2] = _T('c'); //fix
-						 
+
 					}
 
 				}
@@ -288,24 +467,24 @@ BOOL moveCars(pData data) {
 						if (prevElement == _T('s')) {
 							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = _T('-'); // depois mudar isto PORQUE nÂO SABEMOS PARA ONDE O SAPO VAI SE È PARA CIMA BAIXO ESQ OU IDIRETA
-							 
+
 						}
 						else if (prevElement == _T('O')) {
 							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = _T('-');
-							 
+
 						}
 						else
 						{
 							data->game[0].board[i][j + 1] = data->game[0].board[i][j];
 							data->game[0].board[i][j] = prevElement;
-							 
+
 						}
 					}
 					if (data->game[0].board[i][0] == _T('c')) {
 						data->game[0].board[i][0] = _T('-');
 						data->game[0].board[i][1] = _T('c'); //fix
-						 
+
 					}
 				}
 			}
@@ -355,18 +534,16 @@ DWORD WINAPI decreaseTime(LPVOID params) {
 	pData data = (pData)params;
 
 	while (!data->game->isShutdown && !data->game->isSuspended) {
-		 
+
 		if (!data->game->isSuspended && data->time > 0) {
 			data->time--; // depois ver como fazer com a velocidade dos carros
-			//showBoard(data);
+			showBoard(data);
 			Sleep(1000);
 		}
 		else if (data->time == 0) {
 			data->game->isShutdown = TRUE;
 			return 1;
 		}
-
-		 
 	}
 	return 0;
 }
@@ -570,22 +747,23 @@ void startgame(pData data) {
 	data->game[1].columns = (DWORD)20;
 	data->game[0].nFrogs = 0;
 	// check for gametype
-	data->game->player1.nLives = 3;
-	data->game->player1.score = 0;
-	if (data->game->gameType == 1) {
-		data->game->player1.x = 10;
-		data->game->player1.y = data->game->rows - 1;
-
-
+	
+	if (data->game[0].gameType == 1) {
+		data->game[0].player1.x = 10;
+		data->game[0].player1.y = data->game->rows - 1;
+		data->game[0].player1.nLives = 3;
+		data->game[0].player1.score = 0;
 	}
 	else {
-		data->game->player1.x = 10;
-		data->game->player1.y = data->game->rows - 1;
-		data->game->player2.x = 11;
-		data->game->player2.y = data->game->rows - 1;
+		for (DWORD i = 0; i < 2; i++) {
+			data->game[i].player1.x = 10;
+			data->game[i].player1.y = data->game[i].rows - 1;
+			data->game[i].player2.x = 12;
+			data->game[i].player2.y = data->game[i].rows - 1;
+			data->game[i].player2.score = 0;
+			data->game[i].player2.nLives = 3;
+		}
 	}
-
-
 
 	initBoard(data);
 	insertCars(data);
@@ -605,53 +783,43 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					_tprintf(_T("\nChegou à meta!\n"));
 					win = TRUE;
 					end = TRUE;
-					
 				}
 			}
 			else {
-				if (checkFrogSide(data)) {
-					
+				if (checkFrogSide(data, data->game[0].player1)) {
 					data->game[0].player1.x = 10;
 					data->game[0].player1.y = data->game[0].rows - 1; //tens
 					//data->game[0].board[data->game[0].player1.y][data->game[0].player1.x] = _T('s');
 					data->game[0].player1.nLives--;
 					_tprintf(_T("\nMorreu!\n"));
 					_tprintf(_T("\nVidas: %d"), data->game[0].player1.nLives);
-
-
-
 				}
 
 				if (data->game[0].player1.nLives <= 0) {
-					data->game->isMoving = FALSE;
-
+					data->game[0].isMoving = FALSE;
+					end = TRUE;
 					//end = TRUE;
 				}
-
-				
 
 				if (data->game[0].player1.y == 0) {
 					data->game[0].player1.x = 10;
 					data->game[0].player1.y = data->game[0].rows - 1;
-					data->game->isMoving = FALSE;
+					data->game[0].isMoving = FALSE;
 					_tprintf(_T("\nChegou à meta!\n"));
 					data->game[0].player1.score += 100;
+					win = TRUE;
+					end = TRUE;
 					//win = TRUE;
 					//end = TRUE;
 					
 				}
-
-				
-				
 			}
 		}
 	
 	}
-
-
 	if (end) {
 		_tprintf(_T("\nPerdeu!\n"));
-		data->game->isMoving = FALSE;
+		data->game[0].isMoving = FALSE;
 
 		Sleep(1000);
 		data->game[0].isShutdown = TRUE;
@@ -675,7 +843,7 @@ DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
 	while (!end) {
 		if (!data->game[1].isSuspended) {
 			if (data->game[1].time == 0) {
-				if (data->game[1].player1.y == 0) {
+				if (data->game[1].player2.y == 0) {
 					_tprintf(_T("\nChegou à meta!\n"));
 					win = TRUE;
 					end = TRUE;
@@ -684,46 +852,39 @@ DWORD WINAPI threadFroggerMultiPlayer(LPVOID params) {
 			}
 			else {
 
-				if (data->game[1].player1.nLives <= 0) {
+				if (data->game[1].player2.nLives <= 0) {
 					data->game->isMoving = FALSE;
 
 					//end = TRUE;
 				}
 
-				if (checkFrogSide(data)) {
-					data->game[1].player1.nLives--;
-					data->game[1].player1.x = 10;
-					data->game[1].player1.y = data->game[1].rows - 1; //tens
-					data->game[1].board[data->game[1].player1.y][data->game[1].player1.x] = _T('s');
+				if (checkFrogSide(data, data->game[1].player2)) {
+					data->game[1].player2.nLives--;
+					data->game[1].player2.x = 10;
+					data->game[1].player2.y = data->game[1].rows - 1; //tens
+					data->game[1].board[data->game[1].player2.y][data->game[1].player2.x] = _T('s');
 					_tprintf(_T("\nMorreu!\n"));
-					_tprintf(_T("\nVidas: %d"), data->game[1].player1.nLives);
-
-
+					_tprintf(_T("\nVidas: %d"), data->game[1].player2.nLives);
 
 				}
 
-				if (data->game[1].player1.y == 0) {
-					data->game[1].player1.x = 10;
-					data->game[1].player1.y = data->game[1].rows - 1;
-					data->game->isMoving = FALSE;
+				if (data->game[1].player2.y == 0) {
+					data->game[1].player2.x = 10;
+					data->game[1].player2.y = data->game[1].rows - 1;
+					data->game[1].isMoving = FALSE;
 					_tprintf(_T("\nChegou à meta!\n"));
-					data->game[0].player1.score += 100;
+					data->game[1].player2.score += 100;
 					//win = TRUE;
 					//end = TRUE;
 
 				}
-
-
-
 			}
 		}
-
 	}
-
 
 	if (end) {
 		_tprintf(_T("\nPerdeu!\n"));
-		data->game->isMoving = FALSE;
+		data->game[1].isMoving = FALSE;
 
 		Sleep(1000);
 		data->game[1].isShutdown = TRUE;
@@ -756,7 +917,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 					 data->game[0].isShutdown = TRUE;
 				 }
 				 else {
-					 data->game[i].board[data->game[i].player1.y][data->game[i].player1.x] = _T('-');
+					 data->game->board[data->game->player1.y][data->game->player1.x] = _T('-');
 
 					 returnValue = ReadFile(data->threadData->hPipe[i].hInstance, &data->game[i], sizeof(Game), &n, NULL);
 					 if (!returnValue || !n) {
@@ -764,9 +925,7 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 						 break;
 					 }
 					 // é a jogada que vai fazer
-					 
-					
-					 data->game[i].board[data->game[i].player1.y][data->game[i].player1.x] = _T('s');
+					 data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
 					 moveCars(data);
 					 Sleep(10);
 				 }
@@ -782,9 +941,9 @@ DWORD WINAPI pipeReadAndWriteThread(LPVOID params) {
 	for (DWORD i = 0; i < NUM; i++) {
 		SetEvent(data->threadData->hEvents[i]);
 	}
-
 	return 0;
 }
+
 
 int _tmain(int argc, TCHAR** argv) {
 	// aqui são as vars
@@ -979,7 +1138,6 @@ int _tmain(int argc, TCHAR** argv) {
 
 
 	WaitForMultipleObjects(5, hReceiveCmdThread, hDecreaseTimerThread, hSendGameDataThread, hSinglePlayerThread, hPipeThread, TRUE, 2000);
-
 
 	//RegCloseKey(reg.key);
 	UnmapViewOfFile(data.sharedMemGame);

@@ -34,6 +34,7 @@ DWORD WINAPI sendCmdThread(LPVOID params) {
 		token = _tcstok_s(opt, TEXT(" "), &next);
 
 		if (_tcscmp(token, _T("stopcars")) == 0) {
+			
 			WaitForSingleObject(data->mutexCmd, INFINITE);
 
 				//_tprintf(_T("%s"), token);
@@ -174,6 +175,7 @@ void showBoard(pData data) {
 	}
 
 	_tprintf(_T("\nInsert cmd: "));
+	
 	ReleaseMutex(data->hMutex);
 }
 

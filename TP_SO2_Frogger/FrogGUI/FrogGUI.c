@@ -39,8 +39,18 @@ DWORD WINAPI frogThread(LPVOID params) {
         if (!returnValue || !n) {
             break;
         }
-        
+
         Sleep(50);
+
+        if (data->game->player1.nLives == 0) {
+            MessageBox(data->hWnd, TEXT("\nOh não! Perdeste todas as vidas!"), TEXT("Game Over!"), MB_OK | MB_ICONEXCLAMATION);
+            return (1);
+        }
+
+        if (data->game->player1.y == 0) {
+            MessageBox(data->hWnd, TEXT("\nParabéns! Chegaste à meta!\n"), TEXT("\nVitória!"), MB_OK | MB_ICONEXCLAMATION);
+            return (1);
+        }
         
         WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
         
@@ -389,6 +399,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             // Move frog up
             hdc = GetDC(hWnd);
             data->game->player1.y--;
+            data->game->player1.hasMoved = TRUE;
            // data->game->board[data->game->player1.y][data->game->player1.x]=_T('s');
             //data->game->nCars = 0;
             //MessageBox(hWnd, TEXT("Movi - me"), TEXT("BOAS"), MB_OK | MB_ICONEXCLAMATION)
@@ -400,6 +411,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
 
             data->game->player1.y++;
+            data->game->player1.hasMoved = TRUE;
             //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
 
             ReleaseDC(hWnd, hdc);
@@ -409,6 +421,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
             // Move frog left
             data->game->player1.x--;
+            data->game->player1.hasMoved = TRUE;
             //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
 
             //InvalidateRect(hWnd, NULL, TRUE);
@@ -418,6 +431,7 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
             hdc = GetDC(hWnd);
             // Move frog right
             data->game->player1.x++;
+            data->game->player1.hasMoved = TRUE;
             //data->game->board[data->game->player1.y][data->game->player1.x] = _T('s');
 
             // InvalidateRect(hWnd, NULL, TRUE);
@@ -436,6 +450,13 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
         case WM_CLOSE:
             if (MessageBox(hWnd, _T("Are you sure you want to leave?"), _T("Leave"), MB_YESNO) == IDYES)
                 DestroyWindow(hWnd);
+            break;
+        case WM_RBUTTONDOWN:
+            hdc = GetDC(hWnd);
+            data->game->player1.x = 10;
+            data->game->player1.y = data->game->rows - 1;
+            //InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
             break;
         case WM_DESTROY:	// Destruir a janela e terminar o programa 
                             // "PostQuitMessage(Exit Status)"		
