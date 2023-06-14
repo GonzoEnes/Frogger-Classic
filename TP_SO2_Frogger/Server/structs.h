@@ -36,6 +36,7 @@ struct GAME {
 	Player player1;
 	Player player2;
 	DWORD nFrogs;
+	DWORD level;
 	DWORD carSpeed; // ver com o prof
 	DWORD suspended;
 	DWORD time; // o tempo de jogo

@@ -44,13 +44,15 @@ DWORD WINAPI frogThread(LPVOID params) {
 
         if (data->game->player1.nLives == 0) {
             MessageBox(data->hWnd, TEXT("\nOh não! Perdeste todas as vidas!"), TEXT("Game Over!"), MB_OK | MB_ICONEXCLAMATION);
+            Sleep(1000);
+            data->game->isShutdown = TRUE;
             return (1);
         }
 
-        if (data->game->player1.y == 0) {
+        /*if (data->game->player1.y == 0) {
             MessageBox(data->hWnd, TEXT("\nParabéns! Chegaste à meta!\n"), TEXT("\nVitória!"), MB_OK | MB_ICONEXCLAMATION);
             return (1);
-        }
+        }*/
         
         WriteFile(data->hPipe, data->game, sizeof(Game), &n, NULL);
         
@@ -187,25 +189,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
         NULL,
         NULL
     );
-   
-
-	HWND hwndLabelScore = CreateWindow(
-		L"STATIC",                       // Predefined class; Unicode assumed 
-		L"Lives:   Score:  ",            // Label text 
-		WS_VISIBLE | WS_CHILD,           // Styles 
-		10,                              // x position 
-		700,                             // y position 
-		200,                             // Width
-		30,                              // Height
-		hWnd,                            // Parent window
-		(HMENU)LABEL_SCORE,              // No menu.
-		NULL,
-		NULL);
-
-	if (hwndLabelScore == NULL) {
-		MessageBox(NULL, L"Failed to create label.", L"Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
+  
       // ============================================================================
       // 4. Mostrar a janela
       // ============================================================================
@@ -304,9 +288,11 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
     static HDC memDC = NULL;
     static int speed;
     HANDLE hMutex;
+    static HWND hWndTextInfoFrog;
 
     switch (messg) {
     case WM_CREATE:
+
         hBitmap = (HBITMAP)LoadImage(NULL, TEXT("black.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
         hBitmapBeginEnd = (HBITMAP)LoadImage(NULL, TEXT("azul.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
         hBitmapCar = (HBITMAP)LoadImage(NULL, TEXT("carro.bmp"), IMAGE_BITMAP, 55, 55, LR_LOADFROMFILE | LR_LOADTRANSPARENT);
@@ -344,8 +330,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		xBitmap = (800 - (totalPixels / 2));
 		yBitmap = 150;
 	
-
-
 		for (int i = 0; i < data->game->rows; i++) { // colocar linhas que le do pipe no futuro
 			for (int j = 0; j < data->game->columns; j++) {    // colocar colunas que le do pipe no futuro
 				if (i == data->game->rows - 1 || i == 0) { // se estivermos na primeira/ultima coluna, pinta de azul
@@ -354,10 +338,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				else { //seno mete o bitmap de preto
 					BitBlt(hdc, xBitmap, yBitmap, bitmap.bmWidth, bitmap.bmHeight, bitmapDC, 0, 0, SRCCOPY);
 				}
-
-				/*if (data->game->board[i][j] == _T('s')) {
-					BitBlt(hdc, xBitmap, yBitmap, bitmapFrog.bmWidth, bitmapFrog.bmHeight, bitmapFrogDC, 0, 0, SRCCOPY);
-				}*/
 				if (data->game->gameType == 1) {
 					if (i == data->game->player1.y && j == data->game->player1.x) {
 						BitBlt(hdc, xBitmap, yBitmap, bitmapFrog.bmWidth, bitmapFrog.bmHeight, bitmapFrogDC, 0, 0, SRCCOPY);
@@ -440,6 +420,45 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
         }
         break;
 
+    case WM_MOUSEHOVER: // AN ATTEMPT WAS MADE BUT DOESN'T WORKINGS
+
+        xPos = GET_X_LPARAM(lParam);
+        yPos = GET_Y_LPARAM(lParam);
+
+        GetClientRect(hWnd, &rect);
+
+        if (xPos >= xBitmap && xPos <= xBitmap + (bitmapFrog.bmWidth * data->game->columns - 1) &&
+            yPos >= yBitmap && yPos <= yBitmap + (bitmapFrog.bmHeight * data->game->rows - 1)) {
+                
+            DWORD row = (yPos - yBitmap) / bitmapFrog.bmHeight;
+            DWORD col = (xPos - xBitmap) / bitmapFrog.bmWidth;
+        
+            if (row >= 0 && row < data->game->rows - 1 && col >= 0 && col < data->game->columns - 1)
+            {
+                HWND hLabel = GetDlgItem(hWnd, LABEL_SCORE);
+
+                if (hLabel == NULL) {
+                    break;
+                }
+               
+                TCHAR text[256];
+
+                _stprintf_s(text, sizeof(text), _T("Score: %d Lives: %d Level: %d"), data->game->player1.score, data->game->player1.nLives, data->game->level);
+
+                SetWindowText(hLabel, text);
+
+                TRACKMOUSEEVENT tme;
+
+                tme.cbSize = sizeof(TRACKMOUSEEVENT);
+
+                tme.dwFlags = TME_LEAVE;
+
+                tme.hwndTrack = hWnd;
+
+                TrackMouseEvent(&tme);
+            }
+        }
+        break;
         case WM_COMMAND:
             if (LOWORD(wParam) == BTN_QUIT) {
                 data->game->isShutdown = TRUE;
