@@ -775,6 +775,8 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 	pData data = (pData)params;
 	BOOL win = FALSE;
 	BOOL end = FALSE;
+	
+	DWORD nTimesCrossed = 0;
 
 	while (!end) {
 		if (!data->game[0].isSuspended) {
@@ -801,14 +803,26 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					//end = TRUE;
 				}
 
-				if (data->game[0].player1.y == 0) {
+				if (data->game[0].player1.y == 0) { // se chegou à meta
 					data->game[0].player1.x = 10;
 					data->game[0].player1.y = data->game[0].rows - 1;
-					data->game[0].isMoving = FALSE;
+					//data->game[0].isMoving = FALSE;
 					_tprintf(_T("\nChegou à meta!\n"));
 					data->game[0].player1.score += 100;
-					win = TRUE;
-					end = TRUE;
+					nTimesCrossed = (data->game[0].player1.score / 100);
+					_tprintf(_T("\nAtravessou a meta um total de %d vezes!"), nTimesCrossed);
+					
+					if (data->game[0].player1.score == 1000) {
+						_tprintf(_T("\nAtravessou 10 vezes a meta! Player 1 ganhou!\n"));
+						data->game[0].isMoving = FALSE;
+						win = TRUE;
+						end = TRUE;
+					}
+					if (data->game[0].nCars == 0) {
+						insertCars(data); // ver bem este if aqui, pode dar errado
+					}
+					//win = TRUE;
+					//end = TRUE;
 					//win = TRUE;
 					//end = TRUE;
 					
