@@ -786,6 +786,10 @@ DWORD WINAPI threadFroggerSinglePlayer(LPVOID params) {
 					win = TRUE;
 					end = TRUE;
 				}
+				else {
+					_tprintf(_T("\nO tempo acabou e não chegou à meta.\n));
+					end = TRUE;
+				}
 			}
 			else {
 				if (checkFrogSide(data, data->game[0].player1)) {
